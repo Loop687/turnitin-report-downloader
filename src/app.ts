@@ -4,43 +4,18 @@ import fs from 'fs';
 import multer from 'multer';
 import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
 import cors, { CorsOptions } from 'cors';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-
-// Comentar importaciones problemáticas temporalmente
-// import './scripts/replay-learned-session';
-// import './scripts/smart-scraper';
-
-dotenv.config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);
 
-// 🔥 NUEVO: Configuración específica para plataformas gratuitas
+// 🔥 NUEVO: Configuración para producción
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const IS_FREE_TIER = process.env.FREE_TIER === 'true' || 
-                     process.env.VERCEL || 
-                     process.env.RENDER || 
-                     process.env.RAILWAY_ENVIRONMENT;
 
-// 🔥 MEJORADO: CORS más específico para producción
+// 🔥 NUEVO: CORS configurado para producción
 const corsOptions: CorsOptions = {
-    origin: (origin, callback) => {
-        // Permitir requests sin origin (apps móviles, Postman, etc.)
-        if (!origin) return callback(null, true);
-        
-        if (IS_PRODUCTION) {
-            // En producción, solo permitir orígenes específicos
-            if (ALLOWED_ORIGINS.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error('No permitido por CORS'));
-            }
-        } else {
-            // En desarrollo, permitir todo
-            callback(null, true);
-        }
-    },
+    origin: IS_PRODUCTION ? 
+        ['https://turnitin-downloader.onrender.com', 'https://tu-dominio-personalizado.com'] :
+        true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -49,7 +24,8 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Nueva ruta para la solicitud de descarga del estudiante
@@ -120,34 +96,28 @@ app.post('/api/admin/close-browser', async (req, res) => {
 
 // Ruta principal para servir index.html
 app.get('/', (_req, res) => {
-    if (IS_FREE_TIER) {
-        // Servir una página con información específica para tier gratuito
+    if (IS_PRODUCTION) {
+        // En producción, servir directamente index.html
+        res.sendFile(path.join(__dirname, '../public/index.html'));
+    } else {
+        // En desarrollo, servir index.html con información adicional
         const indexPath = path.join(__dirname, '../public/index.html');
         let htmlContent = fs.readFileSync(indexPath, 'utf8');
         
-        // Inyectar información sobre el tier gratuito
-        const freeNotice = `
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
-            <h4>🌟 Versión de Prueba Gratuita</h4>
-            <p>Esta aplicación está corriendo en un servidor gratuito. Características:</p>
-            <ul>
-                <li>✅ Funcionalidad completa</li>
-                <li>⏰ Puede tener tiempos de respuesta más lentos</li>
-                <li>🔄 El servidor se duerme después de 30 min de inactividad</li>
-                <li>💾 Archivos temporales se eliminan periódicamente</li>
-            </ul>
-            <p><strong>URL de esta instancia:</strong> <code>${process.env.VERCEL_URL || process.env.RENDER_EXTERNAL_URL || req.get('host')}</code></p>
+        // Inyectar información sobre el entorno de desarrollo
+        const devNotice = `
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #4caf50;">
+            <h4>🚀 Entorno de Desarrollo</h4>
+            <p>Estás viendo esta aplicación en un entorno de desarrollo. Algunas características pueden no estar disponibles.</p>
         </div>
         `;
         
-        htmlContent = htmlContent.replace('</body>', freeNotice + '</body>');
+        htmlContent = htmlContent.replace('</body>', devNotice + '</body>');
         res.send(htmlContent);
-    } else {
-        res.sendFile(path.join(__dirname, '../public/index.html'));
     }
 });
 
-// 🔥 NUEVO: Endpoint de salud para Railway
+// 🔥 NUEVO: Endpoint de salud para Render
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
