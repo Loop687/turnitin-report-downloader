@@ -3,18 +3,19 @@ services:
     name: turnitin-downloader
     env: node
     plan: free
-    region: oregon # O la región que prefieras
+    region: oregon # O tu región preferida
+    # Especificar una versión LTS de Node.js muy estable
+    # Render puede estar usando una versión demasiado nueva por defecto para el runtime.
+    nodeVersion: "20.12.2" # O la última LTS, ej: "18.19.1"
     buildCommand: npm install && npm run build
-    startCommand: node dist/app.js # Asegúrate que esta línea sea EXACTAMENTE así
-    healthCheckPath: /health # Añadido para mejor monitoreo
+    startCommand: node dist/app.js # Comando de inicio correcto
+    healthCheckPath: /health
     envVars:
-      - key: NODE_VERSION # Especificar versión LTS de Node
-        value: 20.11.1 # O la última LTS estable, ej: 18.19.0
       - key: NODE_ENV
         value: production
-      - key: PUPPETEER_EXECUTABLE_PATH
-        value: /usr/bin/google-chrome-stable
       - key: PUPPETEER_ARGS
         value: "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--no-first-run,--disable-extensions,--disable-gpu"
       - key: PORT
         value: 10000
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/.cache/puppeteer
