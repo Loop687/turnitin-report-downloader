@@ -1,4 +1,4 @@
-console.log("<<<<< EXECUTING COMPILED dist/app.js >>>>>"); // Log de diagnóstico
+console.log("<<<<< EXECUTING COMPILED dist/app.js >>>>>");
 console.log(`Node.js version: ${process.version}`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`Current working directory: ${process.cwd()}`);
@@ -9,19 +9,16 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import cors, { CorsOptions } from 'cors';
-import axios from 'axios'; // <--- AÑADIR AXIOS
+import axios from 'axios';
+
+// Local worker architecture - no direct puppeteer imports
+// import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-// URL de tu trabajador local (expuesto por ngrok). Configúralo en las variables de entorno de Render.
-const LOCAL_WORKER_URL = process.env.LOCAL_WORKER_URL;
-
-// 🔥 NUEVO: Configuración para producción
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-
-// 🔥 NUEVO: CORS configurado para producción
+// CORS configurado para producción
 const corsOptions: CorsOptions = {
     origin: IS_PRODUCTION ? 
         ['https://turnitin-downloader.onrender.com', 'https://tu-dominio-personalizado.com'] :
@@ -38,7 +35,33 @@ app.use(express.urlencoded({ extended: true }));
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Nueva ruta para la solicitud de descarga del estudiante
+// Endpoint de salud para Render
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        localWorkerConfigured: !!LOCAL_WORKER_URL
+    });
+});
+
+// Información de la aplicación
+app.get('/api/info', (req, res) => {
+    res.json({
+        name: 'Turnitin AI Report Downloader',
+        version: '1.0.0',
+        status: 'running',
+        features: [
+            'AI Report Download via Local Worker',
+            'Submission ID Search',
+            'Title-based Search',
+            'Remote Session Management'
+        ]
+    });
+});
+
+// Endpoint principal para estudiantes
 app.post('/api/student/request-ai-download', async (req, res) => {
     const { targetWorkTitle, submissionId } = req.body;
     const searchCriteria = submissionId || targetWorkTitle;
@@ -48,126 +71,87 @@ app.post('/api/student/request-ai-download', async (req, res) => {
 
     if (!LOCAL_WORKER_URL) {
         console.error('❌ LOCAL_WORKER_URL no está configurado en las variables de entorno.');
-        return res.status(500).json({ message: 'Error de configuración del servidor: El trabajador local no está configurado.' });
+        return res.status(500).json({ 
+            message: 'Error de configuración: El trabajador local no está configurado. Contacta al administrador.' 
+        });
     }
 
     if (!searchCriteria) {
-        return res.status(400).json({ message: 'Se requiere Submission ID o título del trabajo.' });
+        return res.status(400).json({ 
+            message: 'Se requiere Submission ID o título del trabajo.' 
+        });
     }
 
     try {
         console.log(`📡 Enviando solicitud al trabajador local: ${LOCAL_WORKER_URL}/process-download`);
+        
         const workerResponse = await axios.post(`${LOCAL_WORKER_URL}/process-download`, 
             { 
                 submissionId: submissionId, 
                 targetWorkTitle: targetWorkTitle 
             },
             {
-                responseType: 'arraybuffer', // Para recibir el archivo PDF
-                timeout: 300000 // Timeout de 5 minutos para la operación del trabajador
+                responseType: 'arraybuffer',
+                timeout: 300000, // 5 minutos timeout
+                validateStatus: function (status) {
+                    return status < 500; // No lanzar error para códigos 4xx
+                }
             }
         );
 
-        if (workerResponse.status === 200 && workerResponse.headers['content-type'] === 'application/pdf') {
-            console.log('✅ PDF recibido del trabajador local.');
+        if (workerResponse.status === 200) {
+            console.log('✅ PDF recibido del trabajador local');
+            
+            // Configurar headers para descarga de PDF
             res.setHeader('Content-Type', 'application/pdf');
             
             let filename = `report_${submissionId || targetWorkTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`;
             const contentDisposition = workerResponse.headers['content-disposition'];
             if (contentDisposition) {
                 const match = contentDisposition.match(/filename="?(.+)"?/i);
-                if (match && match[1]) filename = match[1];
+                if (match && match[1]) {
+                    filename = match[1];
+                }
             }
+            
             res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
             res.send(Buffer.from(workerResponse.data));
+            
+            console.log(`✅ Archivo "${filename}" enviado al estudiante`);
         } else {
-            // Si el trabajador devuelve un JSON con error
-            const errorData = JSON.parse(Buffer.from(workerResponse.data).toString('utf8'));
-            console.error('❌ Error desde el trabajador local:', errorData.message || workerResponse.status);
-            res.status(workerResponse.status || 500).json({ message: errorData.message || 'Error al procesar la solicitud en el trabajador local.' });
-        }
-
-    } catch (error: any) {
-        console.error('[API] Error contactando al trabajador local o procesando su respuesta:', error.message);
-        if (error.response) {
-            // El servidor del trabajador local respondió con un código de error
+            // Error del trabajador local
+            let errorMessage = 'Error en el trabajador local';
             try {
-                const errorResponseData = JSON.parse(Buffer.from(error.response.data).toString('utf8'));
-                 res.status(error.response.status || 500).json({ message: `Error del trabajador local: ${errorResponseData.message || error.message}` });
+                const errorData = JSON.parse(Buffer.from(workerResponse.data).toString('utf8'));
+                errorMessage = errorData.message || errorMessage;
             } catch (parseError) {
-                 res.status(error.response.status || 500).json({ message: `Error del trabajador local: ${error.message}` });
+                console.warn('No se pudo parsear el error del trabajador');
             }
-        } else if (error.request) {
-            // La solicitud se hizo pero no se recibió respuesta (ej. ngrok caído, trabajador no responde)
-            res.status(503).json({ message: 'El servicio del trabajador local no está disponible o no respondió a tiempo.' });
+            
+            console.error(`❌ Error del trabajador local (${workerResponse.status}): ${errorMessage}`);
+            res.status(workerResponse.status).json({ message: errorMessage });
+        }
+
+    } catch (error: any) {
+        console.error('[API] Error contactando al trabajador local:', error.message);
+        
+        if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+            res.status(503).json({ 
+                message: 'El trabajador local no está disponible. Verifica que esté ejecutándose y que ngrok esté activo.' 
+            });
+        } else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
+            res.status(504).json({ 
+                message: 'Timeout al procesar la solicitud. El proceso puede tomar varios minutos.' 
+            });
         } else {
-            // Algo más causó el error
-            res.status(500).json({ message: `Error interno del servidor: ${error.message}` });
+            res.status(500).json({ 
+                message: `Error interno: ${error.message}` 
+            });
         }
     }
 });
 
-// 🔥 ACTUALIZADO: Endpoint para cerrar la sesión del navegador
-app.post('/api/admin/close-browser', async (req, res) => {
-    try {
-        console.log('[API] Solicitud de cierre de sesión del navegador recibida.');
-        await closeBrowserSession();
-        res.json({ success: true, message: 'Sesión del navegador cerrada exitosamente.' });
-    } catch (error: any) {
-        console.error('[API] Error cerrando sesión del navegador:', error);
-        res.status(500).json({ success: false, message: `Error: ${error.message}` });
-    }
-});
-
-// Ruta principal para servir index.html
-app.get('/', (_req, res) => {
-    if (IS_PRODUCTION) {
-        // En producción, servir directamente index.html
-        res.sendFile(path.join(__dirname, '../public/index.html'));
-    } else {
-        // En desarrollo, servir index.html con información adicional
-        const indexPath = path.join(__dirname, '../public/index.html');
-        let htmlContent = fs.readFileSync(indexPath, 'utf8');
-        
-        // Inyectar información sobre el entorno de desarrollo
-        const devNotice = `
-        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #4caf50;">
-            <h4>🚀 Entorno de Desarrollo</h4>
-            <p>Estás viendo esta aplicación en un entorno de desarrollo. Algunas características pueden no estar disponibles.</p>
-        </div>
-        `;
-        
-        htmlContent = htmlContent.replace('</body>', devNotice + '</body>');
-        res.send(htmlContent);
-    }
-});
-
-// 🔥 NUEVO: Endpoint de salud para Render
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
-// 🔥 NUEVO: Información de la aplicación
-app.get('/api/info', (req, res) => {
-    res.json({
-        name: 'Turnitin AI Report Downloader',
-        version: '1.0.0',
-        status: 'running',
-        features: [
-            'AI Report Download',
-            'Submission ID Search',
-            'Title-based Search',
-            'Session Management'
-        ]
-    });
-});
-
-// 🔥 MEJORADO: Manejo de errores global
+// MEJORADO: Manejo de errores global
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Error global:', err);
     
@@ -184,27 +168,25 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     });
 });
 
-// 🔥 MEJORADO: Inicio del servidor
+// MEJORADO: Inicio del servidor
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
     console.log(`🌍 Modo: ${IS_PRODUCTION ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
-    console.log(`🔓 Navegador se mantendrá abierto entre solicitudes para mejor rendimiento.`);
+    console.log(`🔗 Trabajador local: ${LOCAL_WORKER_URL || 'NO CONFIGURADO'}`);
     
     if (!IS_PRODUCTION) {
         console.log(`📱 Acceso local: http://localhost:${PORT}`);
     }
 });
 
-// 🔥 NUEVO: Graceful shutdown
+// Graceful shutdown (sin puppeteer)
 process.on('SIGTERM', async () => {
     console.log('🔄 Recibida señal SIGTERM, cerrando servidor...');
-    // await closeBrowserSession(); // Ya no se necesita aquí
     process.exit(0);
 });
 
 process.on('SIGINT', async () => {
     console.log('🔄 Recibida señal SIGINT, cerrando servidor...');
-    // await closeBrowserSession(); // Ya no se necesita aquí
     process.exit(0);
 });
 
