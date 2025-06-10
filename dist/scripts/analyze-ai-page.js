@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function analyzeAIPage() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -96,7 +124,7 @@ async function performCompletePageAnalysis(page, downloadPath) {
     console.log('\n🔍 INICIANDO ANÁLISIS COMPLETO DE LA PÁGINA...');
     console.log('===============================================');
     try {
-        const screenshotPath = path.join(downloadPath, `ai_page_analysis_${Date.now()}.png`);
+        const screenshotPath = path_1.default.join(downloadPath, `ai_page_analysis_${Date.now()}.png`);
         await page.screenshot({
             path: screenshotPath,
             fullPage: true
@@ -262,8 +290,8 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 console.log(`   🔗 Enlace: ${el.href}`);
             }
         });
-        const analysisFile = path.join(downloadPath, `ai_page_complete_analysis_${Date.now()}.json`);
-        fs.writeFileSync(analysisFile, JSON.stringify(pageAnalysis, null, 2));
+        const analysisFile = path_1.default.join(downloadPath, `ai_page_complete_analysis_${Date.now()}.json`);
+        fs_1.default.writeFileSync(analysisFile, JSON.stringify(pageAnalysis, null, 2));
         console.log(`\n💾 Análisis completo guardado en: ${analysisFile}`);
         console.log('\n📝 CONTENIDO DE TEXTO DE LA PÁGINA (primeros 500 caracteres):');
         console.log('===============================================================');

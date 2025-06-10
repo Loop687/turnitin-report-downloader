@@ -4,7 +4,7 @@ import fs from 'fs';
 import multer from 'multer';
 import cors, { CorsOptions } from 'cors';
 
-// Fix import path - remove .js extension for TypeScript
+// Fix import path for production
 import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
 
 const app = express();

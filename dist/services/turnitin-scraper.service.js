@@ -1,20 +1,26 @@
-import puppeteer from 'puppeteer';
-import fs from 'fs';
-import path from 'path';
-import { ReportStorageService } from './report-storage.service';
-export class TurnitinScraperService {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TurnitinScraperService = void 0;
+const puppeteer_1 = __importDefault(require("puppeteer"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const report_storage_service_1 = require("./report-storage.service");
+class TurnitinScraperService {
     constructor(debugMode = false) {
         this.browser = null;
-        this.reportStorageService = new ReportStorageService();
-        this.downloadPath = path.join(__dirname, '..', '..', 'temp-downloads');
+        this.reportStorageService = new report_storage_service_1.ReportStorageService();
+        this.downloadPath = path_1.default.join(__dirname, '..', '..', 'temp-downloads');
         this.debugMode = debugMode;
-        if (!fs.existsSync(this.downloadPath)) {
-            fs.mkdirSync(this.downloadPath, { recursive: true });
+        if (!fs_1.default.existsSync(this.downloadPath)) {
+            fs_1.default.mkdirSync(this.downloadPath, { recursive: true });
         }
     }
     async initializeBrowser() {
         console.log('🚀 Iniciando navegador para scraping...');
-        this.browser = await puppeteer.launch({
+        this.browser = await puppeteer_1.default.launch({
             headless: false,
             defaultViewport: null,
             args: [
@@ -117,8 +123,8 @@ export class TurnitinScraperService {
             pageInfo.relevantElements.forEach((el, index) => {
                 console.log(`   ${index + 1}. <${el.tag}> "${el.text?.substring(0, 50)}..." (${el.classes})`);
             });
-            const analysisFile = path.join(this.downloadPath, 'page-analysis.json');
-            fs.writeFileSync(analysisFile, JSON.stringify(pageInfo, null, 2));
+            const analysisFile = path_1.default.join(this.downloadPath, 'page-analysis.json');
+            fs_1.default.writeFileSync(analysisFile, JSON.stringify(pageInfo, null, 2));
             console.log(`\n💾 Análisis detallado guardado en: ${analysisFile}`);
         }
         catch (error) {
@@ -353,16 +359,16 @@ export class TurnitinScraperService {
                 console.log('🎯 Paso 4: Verificando si se abrió el reporte de IA...');
                 const newUrl = page.url();
                 console.log(`📍 Nueva URL: ${newUrl}`);
-                const files = fs.readdirSync(this.downloadPath);
+                const files = fs_1.default.readdirSync(this.downloadPath);
                 const pdfFiles = files.filter(f => f.endsWith('.pdf'));
                 if (pdfFiles.length > 0) {
                     const latestFile = pdfFiles[pdfFiles.length - 1];
                     console.log(`✅ Archivo descargado automáticamente: ${latestFile}`);
                     const newFileName = `${report.studentName.replace(/[^a-zA-Z0-9]/g, '_')}_AI_Report.pdf`;
-                    const oldPath = path.join(this.downloadPath, latestFile);
-                    const newPath = path.join(this.downloadPath, newFileName);
+                    const oldPath = path_1.default.join(this.downloadPath, latestFile);
+                    const newPath = path_1.default.join(this.downloadPath, newFileName);
                     try {
-                        fs.renameSync(oldPath, newPath);
+                        fs_1.default.renameSync(oldPath, newPath);
                         return newFileName;
                     }
                     catch (error) {
@@ -376,7 +382,7 @@ export class TurnitinScraperService {
                         console.log('✅ Encontrado botón de descarga');
                         await downloadElements[0].click();
                         await page.waitForTimeout(10000);
-                        const newFiles = fs.readdirSync(this.downloadPath);
+                        const newFiles = fs_1.default.readdirSync(this.downloadPath);
                         const newPdfFiles = newFiles.filter(f => f.endsWith('.pdf'));
                         if (newPdfFiles.length > pdfFiles.length) {
                             const latestFile = newPdfFiles[newPdfFiles.length - 1];
@@ -392,7 +398,7 @@ export class TurnitinScraperService {
             console.log('📄 Método de respaldo: Guardando página como PDF...');
             const pdfFileName = `${report.studentName.replace(/[^a-zA-Z0-9]/g, '_')}_AI_Report_screenshot.pdf`;
             await page.pdf({
-                path: path.join(this.downloadPath, pdfFileName),
+                path: path_1.default.join(this.downloadPath, pdfFileName),
                 format: 'A4',
                 printBackground: true,
                 margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
@@ -407,14 +413,14 @@ export class TurnitinScraperService {
     async saveReportToSystem(report, downloadedFileName) {
         console.log(`💾 Guardando reporte en el sistema para: ${report.studentName}`);
         try {
-            const sourcePath = path.join(this.downloadPath, downloadedFileName);
-            const uploadsPath = path.join(__dirname, '..', '..', 'uploads', 'reports');
-            if (!fs.existsSync(uploadsPath)) {
-                fs.mkdirSync(uploadsPath, { recursive: true });
+            const sourcePath = path_1.default.join(this.downloadPath, downloadedFileName);
+            const uploadsPath = path_1.default.join(__dirname, '..', '..', 'uploads', 'reports');
+            if (!fs_1.default.existsSync(uploadsPath)) {
+                fs_1.default.mkdirSync(uploadsPath, { recursive: true });
             }
             const finalFileName = `${Date.now()}-${downloadedFileName}`;
-            const finalPath = path.join(uploadsPath, finalFileName);
-            fs.copyFileSync(sourcePath, finalPath);
+            const finalPath = path_1.default.join(uploadsPath, finalFileName);
+            fs_1.default.copyFileSync(sourcePath, finalPath);
             const reportDetails = {
                 studentId: report.studentId,
                 uploaderInstructorId: 'auto-scraper',
@@ -438,3 +444,4 @@ export class TurnitinScraperService {
         }
     }
 }
+exports.TurnitinScraperService = TurnitinScraperService;

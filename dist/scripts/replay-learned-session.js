@@ -1,7 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.replayAction = exports.replayLearnedSession = void 0;
 async function replayLearnedSession() {
     console.log('🔄 Iniciando replay de sesión aprendida...');
     console.log('⚠️ Función de replay temporalmente deshabilitada');
 }
+exports.replayLearnedSession = replayLearnedSession;
 async function replayAction(page, action) {
     console.log(`🔄 Reproduciendo: ${action.type} en ${action.selector}`);
     try {
@@ -53,7 +57,7 @@ async function replayAction(page, action) {
         console.error(`   💥 Error reproduciendo acción: ${error}`);
     }
 }
+exports.replayAction = replayAction;
 if (require.main === module) {
     replayLearnedSession().catch(console.error);
 }
-export { replayLearnedSession, replayAction };

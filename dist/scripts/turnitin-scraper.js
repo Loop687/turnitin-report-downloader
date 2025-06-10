@@ -1,8 +1,13 @@
-import { TurnitinScraperService } from '../services/turnitin-scraper.service';
-import path from 'path';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const turnitin_scraper_service_1 = require("../services/turnitin-scraper.service");
+const path_1 = __importDefault(require("path"));
 async function runScraper() {
     const debugMode = process.argv.includes('--debug');
-    const scraper = new TurnitinScraperService(debugMode);
+    const scraper = new turnitin_scraper_service_1.TurnitinScraperService(debugMode);
     try {
         console.log('🤖 Iniciando scraper automático de Turnitin...');
         console.log('🔍 Modo:', debugMode ? 'DEBUG' : 'NORMAL');
@@ -48,7 +53,7 @@ async function runScraper() {
             console.log('   - Confirma que los trabajos tengan reportes de IA generados');
             console.log('   - Revisa el archivo page-analysis.json para más detalles');
             try {
-                const analysisFile = path.join(scraper['downloadPath'], 'page-analysis.json');
+                const analysisFile = path_1.default.join(scraper['downloadPath'], 'page-analysis.json');
                 if (require('fs').existsSync(analysisFile)) {
                     console.log('\n📄 Revisa el análisis detallado en:', analysisFile);
                 }

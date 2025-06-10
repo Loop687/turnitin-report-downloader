@@ -1,8 +1,36 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
 const EXACT_JSON_DATA = {
     workTitle: "LA LECTURA.docx",
     aiButtonCSS: "tii-aiw-button.hydrated",
@@ -13,7 +41,7 @@ const IS_XPATH_SELECTOR = true;
 const POPOVER_OPENER_SELECTOR = "//tii-sws-header-btn[.//tdl-icon[@icon-name='download']]//button | //tii-sws-header-btn[.//tdl-icon[@icon-name='download']] | //tii-sws-download-btn-mfe//button | //tii-sws-download-btn-mfe";
 const IS_POPOVER_OPENER_XPATH = true;
 async function fullyAutomatedAIDownload() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const mainRl = readline.createInterface({ input: process.stdin, output: process.stdout });
     const mainAskQuestion = (question) => new Promise((resolve) => mainRl.question(question, resolve));
     let currentPage = null;
@@ -83,7 +111,7 @@ async function fullyAutomatedAIDownload() {
                         }
                         catch (popoverWaitError) {
                             console.warn(`🔶 Popover o botón de descarga final no se hizo visible después del clic en el abridor: ${popoverWaitError.message}`);
-                            const popoverErrorPath = path.join(projectDownloadPath, `error_popover_not_visible_attempt_${attempt}_${Date.now()}.png`);
+                            const popoverErrorPath = path_1.default.join(projectDownloadPath, `error_popover_not_visible_attempt_${attempt}_${Date.now()}.png`);
                             if (currentPage)
                                 await currentPage.screenshot({ path: popoverErrorPath });
                             console.log(`📸 Screenshot de error de popover guardado en: ${popoverErrorPath}`);
@@ -94,7 +122,7 @@ async function fullyAutomatedAIDownload() {
                 }
                 catch (e) {
                     console.log(`🔶 Error al intentar encontrar/abrir popover: ${e.message}`);
-                    const openerErrorPath = path.join(projectDownloadPath, `error_popover_opener_attempt_${attempt}_${Date.now()}.png`);
+                    const openerErrorPath = path_1.default.join(projectDownloadPath, `error_popover_opener_attempt_${attempt}_${Date.now()}.png`);
                     if (currentPage)
                         await currentPage.screenshot({ path: openerErrorPath });
                     console.log(`📸 Screenshot de error de abridor de popover guardado en: ${openerErrorPath}`);
@@ -125,7 +153,7 @@ async function fullyAutomatedAIDownload() {
                 }
                 catch (clickError) {
                     console.error(`❌ Error al hacer clic en el botón de descarga final: ${clickError.message}`);
-                    const clickErrorScreenshotPath = path.join(projectDownloadPath, `error_click_download_btn_attempt_${attempt}_${Date.now()}.png`);
+                    const clickErrorScreenshotPath = path_1.default.join(projectDownloadPath, `error_click_download_btn_attempt_${attempt}_${Date.now()}.png`);
                     if (currentPage)
                         await currentPage.screenshot({ path: clickErrorScreenshotPath });
                     console.log(`📸 Screenshot de error de clic guardado en: ${clickErrorScreenshotPath}`);
@@ -133,7 +161,7 @@ async function fullyAutomatedAIDownload() {
             }
             else {
                 console.log(`❌ No se encontró el botón de descarga final en el intento ${attempt}.`);
-                const notFoundScreenshotPath = path.join(projectDownloadPath, `error_btn_not_found_attempt_${attempt}_${Date.now()}.png`);
+                const notFoundScreenshotPath = path_1.default.join(projectDownloadPath, `error_btn_not_found_attempt_${attempt}_${Date.now()}.png`);
                 if (currentPage)
                     await currentPage.screenshot({ path: notFoundScreenshotPath });
                 console.log(`📸 Screenshot de "no encontrado" guardado en: ${notFoundScreenshotPath}`);
@@ -153,7 +181,7 @@ async function fullyAutomatedAIDownload() {
                 }
                 catch (reloadError) {
                     console.error(`❌ Error durante el refresco de página: ${reloadError.message}`);
-                    const reloadErrorPath = path.join(projectDownloadPath, `error_reload_attempt_${attempt}_${Date.now()}.png`);
+                    const reloadErrorPath = path_1.default.join(projectDownloadPath, `error_reload_attempt_${attempt}_${Date.now()}.png`);
                     if (currentPage)
                         await currentPage.screenshot({ path: reloadErrorPath });
                     console.log(`📸 Screenshot de error de refresco guardado en: ${reloadErrorPath}`);
@@ -170,7 +198,7 @@ async function fullyAutomatedAIDownload() {
     catch (error) {
         console.error(`❌ ERROR FATAL: ${error.message}`);
         if (currentPage) {
-            const fatalErrorScreenshotPath = path.join(projectDownloadPath, `fatal_error_screenshot_${Date.now()}.png`);
+            const fatalErrorScreenshotPath = path_1.default.join(projectDownloadPath, `fatal_error_screenshot_${Date.now()}.png`);
             try {
                 await currentPage.screenshot({ path: fatalErrorScreenshotPath });
                 console.log(`📸 Screenshot de error fatal guardado en: ${fatalErrorScreenshotPath}`);
@@ -290,8 +318,8 @@ async function detectAndConfirmDownload(projectDownloadPath) {
     console.log('========================================');
     const downloadLocations = [
         projectDownloadPath,
-        path.join(os.homedir(), 'Downloads'),
-    ].filter(loc => fs.existsSync(loc));
+        path_1.default.join(os_1.default.homedir(), 'Downloads'),
+    ].filter(loc => fs_1.default.existsSync(loc));
     console.log('📁 Verificando en las siguientes ubicaciones:');
     downloadLocations.forEach(loc => console.log(`   - ${loc}`));
     const expectedFileBaseName = EXACT_JSON_DATA.workTitle.split('.')[0].toLowerCase();
@@ -301,16 +329,16 @@ async function detectAndConfirmDownload(projectDownloadPath) {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         console.log(`\n--- Intento de detección ${attempt} de ${maxAttempts} ---`);
         for (const location of downloadLocations) {
-            if (!fs.existsSync(location))
+            if (!fs_1.default.existsSync(location))
                 continue;
-            const filesInLocation = fs.readdirSync(location);
+            const filesInLocation = fs_1.default.readdirSync(location);
             for (const file of filesInLocation) {
-                const filePath = path.join(location, file);
+                const filePath = path_1.default.join(location, file);
                 const fileNameLower = file.toLowerCase();
                 if (!fileNameLower.endsWith('.pdf'))
                     continue;
                 try {
-                    const stats = fs.statSync(filePath);
+                    const stats = fs_1.default.statSync(filePath);
                     const isRecent = (Date.now() - stats.mtimeMs) < (15 * 60 * 1000);
                     if (fileNameLower.includes(expectedFileBaseName) && isRecent) {
                         console.log(`🎉 ¡DESCARGA CONFIRMADA!`);
@@ -320,13 +348,13 @@ async function detectAndConfirmDownload(projectDownloadPath) {
                         console.log(`   Modificado: ${stats.mtime.toLocaleString()}`);
                         const safeOriginalFileName = file.replace(/[^a-zA-Z0-9_.-]/g, '_');
                         const finalFileName = `AI_Report_${EXACT_JSON_DATA.workTitle.split('.')[0]}_${new Date().toISOString().replace(/[:.]/g, '-')}_${safeOriginalFileName}`;
-                        const destPath = path.join(projectDownloadPath, finalFileName);
-                        if (path.resolve(filePath) !== path.resolve(destPath)) {
-                            if (fs.existsSync(destPath) && fs.statSync(destPath).size === stats.size) {
+                        const destPath = path_1.default.join(projectDownloadPath, finalFileName);
+                        if (path_1.default.resolve(filePath) !== path_1.default.resolve(destPath)) {
+                            if (fs_1.default.existsSync(destPath) && fs_1.default.statSync(destPath).size === stats.size) {
                                 console.log(`   ℹ️  Un archivo idéntico ya existe en temp-downloads: ${finalFileName}`);
                             }
                             else {
-                                fs.copyFileSync(filePath, destPath);
+                                fs_1.default.copyFileSync(filePath, destPath);
                                 console.log(`   ✅ COPIADO a temp-downloads como: ${finalFileName}`);
                             }
                         }

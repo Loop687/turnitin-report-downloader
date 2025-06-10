@@ -1,5 +1,11 @@
-import fs from 'fs';
-export class ReportController {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportController = void 0;
+const fs_1 = __importDefault(require("fs"));
+class ReportController {
     constructor(reportStorageService) {
         this.reportStorageService = reportStorageService;
     }
@@ -62,10 +68,10 @@ export class ReportController {
                 return res.status(404).json({ message: 'Report not found for your account.' });
             }
             const filePath = this.reportStorageService.getReportFilePath(report.storedFilename);
-            if (fs.existsSync(filePath)) {
+            if (fs_1.default.existsSync(filePath)) {
                 res.setHeader('Content-Disposition', `attachment; filename=${report.originalFilename}`);
                 res.setHeader('Content-Type', report.mimeType);
-                const fileStream = fs.createReadStream(filePath);
+                const fileStream = fs_1.default.createReadStream(filePath);
                 fileStream.pipe(res);
             }
             else {
@@ -78,3 +84,4 @@ export class ReportController {
         }
     }
 }
+exports.ReportController = ReportController;

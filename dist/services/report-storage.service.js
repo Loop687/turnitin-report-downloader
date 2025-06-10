@@ -1,11 +1,17 @@
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportStorageService = void 0;
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const reportMetadatabase = [];
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads', 'reports');
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const UPLOAD_DIR = path_1.default.join(__dirname, '..', '..', 'uploads', 'reports');
+if (!fs_1.default.existsSync(UPLOAD_DIR)) {
+    fs_1.default.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
-export class ReportStorageService {
+class ReportStorageService {
     constructor() {
     }
     async saveReportMetadata(reportDetails) {
@@ -26,6 +32,7 @@ export class ReportStorageService {
         return report || null;
     }
     getReportFilePath(storedFilename) {
-        return path.join(UPLOAD_DIR, storedFilename);
+        return path_1.default.join(UPLOAD_DIR, storedFilename);
     }
 }
+exports.ReportStorageService = ReportStorageService;

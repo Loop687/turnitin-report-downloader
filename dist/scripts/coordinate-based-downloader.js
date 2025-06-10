@@ -1,8 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.closeBrowserSession = exports.coordinateBasedDownloader = void 0;
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
 const EXACT_JSON_DATA = {
     aiButtonCSS: "tii-aiw-button.hydrated",
 };
@@ -29,7 +58,7 @@ async function getOrCreateScraperSession() {
         }
     }
     console.log('🆕 Creando nueva sesión de navegador...');
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     await scraper.initializeBrowser();
     const page = await scraper.createNewPage();
     try {
@@ -55,7 +84,7 @@ async function getOrCreateScraperSession() {
     console.log('✅ Nueva sesión establecida y guardada globalmente');
     return { scraper, inboxPage: loggedInPage };
 }
-export async function coordinateBasedDownloader(invokedTargetWorkTitle, invokedSubmissionId) {
+async function coordinateBasedDownloader(invokedTargetWorkTitle, invokedSubmissionId) {
     let targetWorkTitle = invokedTargetWorkTitle || "";
     let submissionId = invokedSubmissionId || "";
     try {
@@ -145,7 +174,8 @@ export async function coordinateBasedDownloader(invokedTargetWorkTitle, invokedS
         console.log('ℹ️ Navegador y sesión mantenidos para reutilización.');
     }
 }
-export async function closeBrowserSession() {
+exports.coordinateBasedDownloader = coordinateBasedDownloader;
+async function closeBrowserSession() {
     if (globalScraperInstance) {
         console.log('🔒 Cerrando sesión global del navegador...');
         await globalScraperInstance.closeBrowser();
@@ -155,6 +185,7 @@ export async function closeBrowserSession() {
         console.log('✅ Sesión cerrada');
     }
 }
+exports.closeBrowserSession = closeBrowserSession;
 async function closeExistingDocumentWindows(mainPage) {
     console.log('🧹 Cerrando pestañas de documentos anteriores...');
     const browser = mainPage.browser();
@@ -236,7 +267,7 @@ async function findWorkAndOpenAIReport(scraper, page, searchCriteria, searchType
             else {
                 console.log(`   💡 TIP (Título): Verifica que el título "${searchCriteria}" sea exacto, incluyendo la extensión del archivo (ej: .docx, .pdf).`);
             }
-            const debugScreenshotPath = path.join(projectDownloadPath, `debug_inbox_search_failed_${searchType.replace(' ', '_')}_${Date.now()}.png`);
+            const debugScreenshotPath = path_1.default.join(projectDownloadPath, `debug_inbox_search_failed_${searchType.replace(' ', '_')}_${Date.now()}.png`);
             try {
                 await page.screenshot({ path: debugScreenshotPath });
                 console.log(`📸 Screenshot del inbox (fallo de búsqueda) guardado en: ${debugScreenshotPath}`);
@@ -292,7 +323,7 @@ async function findWorkAndOpenAIReport(scraper, page, searchCriteria, searchType
         console.log('🤖 Haciendo clic en botón de IA...');
         const aiButton = await cartaPage.$(EXACT_JSON_DATA.aiButtonCSS);
         if (!aiButton) {
-            const debugPath = path.join(projectDownloadPath, `debug_carta_page_no_ai_button_${Date.now()}.png`);
+            const debugPath = path_1.default.join(projectDownloadPath, `debug_carta_page_no_ai_button_${Date.now()}.png`);
             try {
                 await cartaPage.screenshot({ path: debugPath });
                 console.log(`📸 Screenshot de debug (sin botón IA) guardado en ${debugPath}`);
@@ -341,7 +372,7 @@ async function findWorkAndOpenAIReport(scraper, page, searchCriteria, searchType
                 else {
                     console.log('❌ No se pudo determinar la página del reporte de IA. Páginas actuales:');
                     pages.forEach((p, idx) => console.log(`   ${idx + 1}: ${p.url()}`));
-                    const debugPath = path.join(projectDownloadPath, `debug_no_ai_report_page_${Date.now()}.png`);
+                    const debugPath = path_1.default.join(projectDownloadPath, `debug_no_ai_report_page_${Date.now()}.png`);
                     try {
                         await cartaPage.screenshot({ path: debugPath });
                         console.log(`📸 Screenshot de debug (sin pág. reporte IA) guardado en ${debugPath}`);
@@ -370,7 +401,7 @@ async function findWorkAndOpenAIReport(scraper, page, searchCriteria, searchType
         if (error.stack)
             console.error(error.stack);
         try {
-            const debugPath = path.join(projectDownloadPath, `error_findWorkAndOpenAIReport_${Date.now()}.png`);
+            const debugPath = path_1.default.join(projectDownloadPath, `error_findWorkAndOpenAIReport_${Date.now()}.png`);
             if (page && typeof page.screenshot === 'function') {
                 await page.screenshot({ path: debugPath });
                 console.log(`📸 Screenshot de error guardado en ${debugPath}`);
@@ -448,9 +479,9 @@ async function visualDownloadStrategy(page, projectDownloadPath) {
         viewport = await page.viewport();
     }
     console.log(`📐 Viewport confirmado: ${viewport?.width}x${viewport?.height}`);
-    const gridScreenshotsPath = path.join(projectDownloadPath, 'grid_screenshots');
-    if (!fs.existsSync(gridScreenshotsPath)) {
-        fs.mkdirSync(gridScreenshotsPath, { recursive: true });
+    const gridScreenshotsPath = path_1.default.join(projectDownloadPath, 'grid_screenshots');
+    if (!fs_1.default.existsSync(gridScreenshotsPath)) {
+        fs_1.default.mkdirSync(gridScreenshotsPath, { recursive: true });
     }
     console.log(`📸 Screenshots se guardarán en: ${gridScreenshotsPath}`);
     const click57_X = 1326;
@@ -460,7 +491,7 @@ async function visualDownloadStrategy(page, projectDownloadPath) {
         await page.mouse.click(click57_X, click57_Y);
         console.log(`🖱️ Clic realizado. Esperando menú...`);
         await page.waitForTimeout(2000);
-        const menuOpenScreenshot = path.join(gridScreenshotsPath, `menu_open_${Date.now()}.png`);
+        const menuOpenScreenshot = path_1.default.join(gridScreenshotsPath, `menu_open_${Date.now()}.png`);
         await page.screenshot({ path: menuOpenScreenshot });
         console.log(`📸 Screenshot del menú: ${menuOpenScreenshot}`);
         let aiReportButtonX = 1155;
@@ -469,7 +500,7 @@ async function visualDownloadStrategy(page, projectDownloadPath) {
         await page.mouse.click(aiReportButtonX, aiReportButtonY);
         console.log(`✅ Clic en AI Writing Report realizado`);
         await page.waitForTimeout(3000);
-        const finalClickScreenshot = path.join(projectDownloadPath, `ai_report_click_${Date.now()}.png`);
+        const finalClickScreenshot = path_1.default.join(projectDownloadPath, `ai_report_click_${Date.now()}.png`);
         await page.screenshot({ path: finalClickScreenshot });
         console.log(`📸 Screenshot post-clic: ${finalClickScreenshot}`);
         console.log('✅ Descarga iniciada. Esperando archivo...');
@@ -478,7 +509,7 @@ async function visualDownloadStrategy(page, projectDownloadPath) {
     }
     catch (error) {
         console.log(`⚠️ Error en descarga: ${error.message}`);
-        const errorScreenshot = path.join(projectDownloadPath, `error_${Date.now()}.png`);
+        const errorScreenshot = path_1.default.join(projectDownloadPath, `error_${Date.now()}.png`);
         try {
             await page.screenshot({ path: errorScreenshot });
             console.log(`📸 Screenshot de error: ${errorScreenshot}`);
@@ -493,8 +524,8 @@ async function detectAndConfirmDownload(projectDownloadPath, targetWorkTitle) {
     console.log('\n🕵️ DETECTANDO DESCARGA OPTIMIZADA...');
     const downloadLocations = [
         projectDownloadPath,
-        path.join(os.homedir(), 'Downloads'),
-    ].filter(loc => fs.existsSync(loc));
+        path_1.default.join(os_1.default.homedir(), 'Downloads'),
+    ].filter(loc => fs_1.default.existsSync(loc));
     const baseTitle = targetWorkTitle.split('.')[0];
     const searchPatterns = [
         baseTitle.toLowerCase(),
@@ -509,14 +540,14 @@ async function detectAndConfirmDownload(projectDownloadPath, targetWorkTitle) {
         console.log(`--- Intento ${attempt}/${totalAttempts} ---`);
         for (const location of downloadLocations) {
             try {
-                const files = fs.readdirSync(location);
+                const files = fs_1.default.readdirSync(location);
                 for (const file of files) {
                     const fileNameLower = file.toLowerCase();
                     if (!fileNameLower.endsWith('.pdf'))
                         continue;
                     try {
-                        const filePath = path.join(location, file);
-                        const stats = fs.statSync(filePath);
+                        const filePath = path_1.default.join(location, file);
+                        const stats = fs_1.default.statSync(filePath);
                         const isRecent = (Date.now() - stats.mtimeMs) < (5 * 60 * 1000);
                         if (isRecent) {
                             const matchFound = searchPatterns.some(pattern => fileNameLower.includes(pattern));
@@ -551,13 +582,13 @@ async function detectAndConfirmDownload(projectDownloadPath, targetWorkTitle) {
     console.log('\n📋 DEBUG - PDFs recientes:');
     for (const location of downloadLocations) {
         try {
-            const files = fs.readdirSync(location);
+            const files = fs_1.default.readdirSync(location);
             const recentPdfs = files.filter(file => {
                 if (!file.toLowerCase().endsWith('.pdf'))
                     return false;
                 try {
-                    const filePath = path.join(location, file);
-                    const stats = fs.statSync(filePath);
+                    const filePath = path_1.default.join(location, file);
+                    const stats = fs_1.default.statSync(filePath);
                     return (Date.now() - stats.mtimeMs) < (5 * 60 * 1000);
                 }
                 catch {
@@ -565,7 +596,7 @@ async function detectAndConfirmDownload(projectDownloadPath, targetWorkTitle) {
                 }
             }).slice(0, 3);
             if (recentPdfs.length > 0) {
-                console.log(`   📂 ${path.basename(location)}: ${recentPdfs.join(', ')}`);
+                console.log(`   📂 ${path_1.default.basename(location)}: ${recentPdfs.join(', ')}`);
             }
         }
         catch (error) {
@@ -578,8 +609,8 @@ async function detectAndConfirmDownloadById(projectDownloadPath, submissionId) {
     console.log('\n🕵️ DETECTANDO DESCARGA POR SUBMISSION ID...');
     const downloadLocations = [
         projectDownloadPath,
-        path.join(os.homedir(), 'Downloads'),
-    ].filter(loc => fs.existsSync(loc));
+        path_1.default.join(os_1.default.homedir(), 'Downloads'),
+    ].filter(loc => fs_1.default.existsSync(loc));
     console.log(`   📋 Buscando archivo PDF reciente (cualquier nombre) para Submission ID: ${submissionId}`);
     const totalAttempts = 6;
     const waitTimeBetweenAttempts = 3000;
@@ -587,15 +618,15 @@ async function detectAndConfirmDownloadById(projectDownloadPath, submissionId) {
         console.log(`--- Intento ${attempt}/${totalAttempts} ---`);
         for (const location of downloadLocations) {
             try {
-                const files = fs.readdirSync(location);
+                const files = fs_1.default.readdirSync(location);
                 let mostRecentPdf = null;
                 for (const file of files) {
                     const fileNameLower = file.toLowerCase();
                     if (!fileNameLower.endsWith('.pdf'))
                         continue;
                     try {
-                        const filePath = path.join(location, file);
-                        const stats = fs.statSync(filePath);
+                        const filePath = path_1.default.join(location, file);
+                        const stats = fs_1.default.statSync(filePath);
                         const isRecent = (Date.now() - stats.mtimeMs) < (5 * 60 * 1000);
                         if (isRecent) {
                             if (!mostRecentPdf || stats.mtimeMs > mostRecentPdf.mtime) {
@@ -612,7 +643,7 @@ async function detectAndConfirmDownloadById(projectDownloadPath, submissionId) {
                 }
                 if (mostRecentPdf) {
                     console.log(`🎉 ¡DESCARGA ENCONTRADA (PDF MÁS RECIENTE)!`);
-                    console.log(`   📄 ${mostRecentPdf.file} (${((await fs.promises.stat(mostRecentPdf.filePath)).size / 1024).toFixed(1)} KB)`);
+                    console.log(`   📄 ${mostRecentPdf.file} (${((await fs_1.default.promises.stat(mostRecentPdf.filePath)).size / 1024).toFixed(1)} KB)`);
                     console.log(`   📂 ${location}`);
                     console.log(`   🕒 Modificado: ${new Date(mostRecentPdf.mtime).toLocaleString()}`);
                     return mostRecentPdf.filePath;

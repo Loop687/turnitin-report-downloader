@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function manualGuidedDownload() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -101,8 +129,8 @@ async function manualGuidedDownload() {
         else {
             console.log('❌ No se encontró el botón de IA');
         }
-        const sessionFile = path.join(scraper.getDownloadPath(), `guided_session_${session.sessionId}.json`);
-        fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+        const sessionFile = path_1.default.join(scraper.getDownloadPath(), `guided_session_${session.sessionId}.json`);
+        fs_1.default.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
         console.log(`💾 Sesión guardada: ${sessionFile}`);
         if (session.success) {
             await generateManualScript(session, scraper.getDownloadPath());
@@ -138,10 +166,10 @@ async function startManualGuidedMode(page, downloadPath, session) {
         console.log('3. Tomaré screenshots y generaré XPaths de cada paso');
         console.log('4. Al final tendremos un script completamente automatizado');
         console.log('');
-        const initialScreenshot = path.join(downloadPath, `guided_initial_${session.sessionId}.png`);
+        const initialScreenshot = path_1.default.join(downloadPath, `guided_initial_${session.sessionId}.png`);
         await page.screenshot({ path: initialScreenshot, fullPage: true });
         console.log(`📸 Screenshot inicial guardado: ${initialScreenshot}`);
-        const initialFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+        const initialFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
         let stepNumber = 1;
         let continueGuiding = true;
         console.log('\n🚀 COMENZANDO GUÍA PASO A PASO...');
@@ -240,7 +268,7 @@ async function startManualGuidedMode(page, downloadPath, session) {
                             console.log(`XPath: ${selectedElement.xpath}`);
                             const confirm = await askQuestion('¿Confirmas que quieres hacer clic en este elemento? (s/n): ');
                             if (confirm.toLowerCase() === 's') {
-                                const beforeScreenshot = path.join(downloadPath, `guided_step_${stepNumber}_before.png`);
+                                const beforeScreenshot = path_1.default.join(downloadPath, `guided_step_${stepNumber}_before.png`);
                                 await page.screenshot({ path: beforeScreenshot, fullPage: true });
                                 console.log('🖱️ Realizando clic...');
                                 try {
@@ -249,7 +277,7 @@ async function startManualGuidedMode(page, downloadPath, session) {
                                         await elements[0].click();
                                         console.log('✅ Clic realizado exitosamente');
                                         await page.waitForTimeout(3000);
-                                        const afterScreenshot = path.join(downloadPath, `guided_step_${stepNumber}_after.png`);
+                                        const afterScreenshot = path_1.default.join(downloadPath, `guided_step_${stepNumber}_after.png`);
                                         await page.screenshot({ path: afterScreenshot, fullPage: true });
                                         const step = {
                                             stepNumber: stepNumber,
@@ -298,7 +326,7 @@ async function startManualGuidedMode(page, downloadPath, session) {
                 }
             }
             stepNumber++;
-            const currentFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+            const currentFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
             const newFiles = currentFiles.filter(f => !initialFiles.includes(f) && (f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx')));
             if (newFiles.length > 0) {
                 console.log('\n🎉 ¡DESCARGA DETECTADA!');
@@ -398,8 +426,8 @@ ${session.manualSteps.map((step) => {
 ${session.manualSteps.map(step => `Paso ${step.stepNumber}: ${step.description}${step.elementInfo ? `\n   XPath: ${step.elementInfo.xpath}` : ''}`).join('\n')}
 */
 `;
-    const scriptPath = path.join(downloadPath, `manual_learned_sequence_${session.sessionId}.ts`);
-    fs.writeFileSync(scriptPath, scriptContent);
+    const scriptPath = path_1.default.join(downloadPath, `manual_learned_sequence_${session.sessionId}.ts`);
+    fs_1.default.writeFileSync(scriptPath, scriptContent);
     console.log(`📝 Script automático generado: ${scriptPath}`);
     console.log('💡 Este script se puede usar para automatizar futuras descargas');
 }

@@ -1,15 +1,43 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
 const EXACT_JSON_DATA = {
     workTitle: "LA LECTURA.docx",
     aiButtonCSS: "tii-aiw-button.hydrated",
     expectedFinalUrl: "https://awo-usw2.integrity.turnitin.com/trn:oid:::1:3272334500"
 };
 async function ultimateDownloadDetector() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -188,16 +216,16 @@ async function advancedDownloadMonitoring(page, projectDownloadPath) {
         console.log('===================================');
         const downloadLocations = [
             projectDownloadPath,
-            path.join(os.homedir(), 'Downloads'),
-            path.join(os.homedir(), 'Desktop'),
-        ].filter(loc => fs.existsSync(loc));
+            path_1.default.join(os_1.default.homedir(), 'Downloads'),
+            path_1.default.join(os_1.default.homedir(), 'Desktop'),
+        ].filter(loc => fs_1.default.existsSync(loc));
         console.log('📁 Monitoreando las siguientes ubicaciones existentes:');
         downloadLocations.forEach((location, index) => {
             console.log(`   ${index + 1}. ${location}`);
         });
         const initialFileStates = new Map();
         downloadLocations.forEach(loc => {
-            initialFileStates.set(loc, new Set(fs.readdirSync(loc)));
+            initialFileStates.set(loc, new Set(fs_1.default.readdirSync(loc)));
         });
         const preManualDownloadTimestamp = Date.now();
         console.log('\n🎮 CONTROL MANUAL MEJORADO');
@@ -223,11 +251,11 @@ async function advancedDownloadMonitoring(page, projectDownloadPath) {
                     const expectedFileBaseName = EXACT_JSON_DATA.workTitle.split('.')[0].toLowerCase();
                     for (const location of downloadLocations) {
                         console.log(`\n   Verificando en: ${location}`);
-                        if (!fs.existsSync(location))
+                        if (!fs_1.default.existsSync(location))
                             continue;
-                        const filesInLocation = fs.readdirSync(location);
+                        const filesInLocation = fs_1.default.readdirSync(location);
                         for (const file of filesInLocation) {
-                            const filePath = path.join(location, file);
+                            const filePath = path_1.default.join(location, file);
                             const fileNameLower = file.toLowerCase();
                             if (!fileNameLower.endsWith('.pdf')) {
                                 continue;
@@ -235,7 +263,7 @@ async function advancedDownloadMonitoring(page, projectDownloadPath) {
                             let isPotentiallyTheFile = false;
                             let reason = "";
                             try {
-                                const stats = fs.statSync(filePath);
+                                const stats = fs_1.default.statSync(filePath);
                                 const isNewSinceInitialScan = !initialFileStates.get(location)?.has(file);
                                 const isRecentModification = stats.mtimeMs > preManualDownloadTimestamp - (5 * 60 * 1000);
                                 if (fileNameLower.includes(expectedFileBaseName)) {
@@ -256,17 +284,17 @@ async function advancedDownloadMonitoring(page, projectDownloadPath) {
                                     console.log(`        Razón: ${reason}, Modificado: ${stats.mtime.toLocaleString()}`);
                                     const safeOriginalFileName = file.replace(/[^a-zA-Z0-9_.-]/g, '_');
                                     const newFileNameInProject = `TurnitinReport_${EXACT_JSON_DATA.workTitle.split('.')[0]}_${new Date().toISOString().replace(/[:.]/g, '-')}_${safeOriginalFileName}`;
-                                    const destPath = path.join(projectDownloadPath, newFileNameInProject);
+                                    const destPath = path_1.default.join(projectDownloadPath, newFileNameInProject);
                                     let shouldCopy = true;
-                                    if (fs.existsSync(destPath)) {
-                                        const destStats = fs.statSync(destPath);
+                                    if (fs_1.default.existsSync(destPath)) {
+                                        const destStats = fs_1.default.statSync(destPath);
                                         if (destStats.mtimeMs >= stats.mtimeMs && destStats.size === stats.size) {
                                             shouldCopy = false;
                                             console.log(`        ℹ️  Ya existe una copia idéntica/más nueva en temp-downloads: ${newFileNameInProject}`);
                                         }
                                     }
                                     if (shouldCopy) {
-                                        fs.copyFileSync(filePath, destPath);
+                                        fs_1.default.copyFileSync(filePath, destPath);
                                         console.log(`        ✅ COPIADO a temp-downloads como: ${newFileNameInProject}`);
                                         foundAndCopiedFiles = true;
                                     }
@@ -293,7 +321,7 @@ async function advancedDownloadMonitoring(page, projectDownloadPath) {
                     break;
                 case '2':
                 case 'screenshot':
-                    const screenshot = path.join(projectDownloadPath, `advanced_screenshot_${Date.now()}.png`);
+                    const screenshot = path_1.default.join(projectDownloadPath, `advanced_screenshot_${Date.now()}.png`);
                     await page.screenshot({ path: screenshot, fullPage: true });
                     console.log(`📸 Screenshot: ${screenshot}`);
                     break;

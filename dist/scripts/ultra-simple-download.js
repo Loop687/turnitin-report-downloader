@@ -1,7 +1,35 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const EXACT_JSON_DATA = {
     workTitle: "LA LECTURA.docx",
     aiButtonXPath: "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
@@ -15,7 +43,7 @@ const EXACT_JSON_DATA = {
     expectedFinalUrl: "https://awo-usw2.integrity.turnitin.com/trn:oid:::1:3272334500"
 };
 async function ultraSimpleDownload() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -140,7 +168,7 @@ async function giveFullManualControl(page, downloadPath) {
         console.log('5. Si aparece un menú/popover, haz clic en la opción de descarga');
         console.log('6. Cuando se descargue el PDF, vuelve aquí y presiona ENTER');
         console.log('');
-        const screenshot = path.join(downloadPath, `ultra_simple_control_${Date.now()}.png`);
+        const screenshot = path_1.default.join(downloadPath, `ultra_simple_control_${Date.now()}.png`);
         await page.screenshot({ path: screenshot, fullPage: true });
         console.log(`📸 Screenshot de la página: ${screenshot}`);
         console.log('💡 Puedes usar este screenshot como referencia');
@@ -155,7 +183,7 @@ async function giveFullManualControl(page, downloadPath) {
         console.log(`   🌐 URL: ${pageInfo.url}`);
         console.log(`   🔧 Total elementos: ${pageInfo.elementsCount}`);
         console.log('');
-        const initialFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+        const initialFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
         console.log(`📁 Archivos iniciales en directorio: ${initialFiles.length}`);
         console.log('🔴 MODO MANUAL ACTIVADO');
         console.log('=======================');
@@ -174,21 +202,21 @@ async function giveFullManualControl(page, downloadPath) {
             switch (choice.toLowerCase()) {
                 case '1':
                 case 'screenshot':
-                    const newScreenshot = path.join(downloadPath, `manual_screenshot_${Date.now()}.png`);
+                    const newScreenshot = path_1.default.join(downloadPath, `manual_screenshot_${Date.now()}.png`);
                     await page.screenshot({ path: newScreenshot, fullPage: true });
                     console.log(`📸 Nuevo screenshot: ${newScreenshot}`);
                     break;
                 case '2':
                 case 'files':
-                    const currentFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+                    const currentFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
                     const newFiles = currentFiles.filter(f => !initialFiles.includes(f));
                     console.log(`📁 Archivos totales: ${currentFiles.length}`);
                     console.log(`📄 Archivos nuevos: ${newFiles.length}`);
                     if (newFiles.length > 0) {
                         console.log('   Archivos nuevos encontrados:');
                         newFiles.forEach((file, index) => {
-                            const filePath = path.join(downloadPath, file);
-                            const stats = fs.statSync(filePath);
+                            const filePath = path_1.default.join(downloadPath, file);
+                            const stats = fs_1.default.statSync(filePath);
                             console.log(`     ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                         });
                     }
@@ -223,7 +251,7 @@ async function giveFullManualControl(page, downloadPath) {
             }
             console.log('');
         }
-        const finalFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+        const finalFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
         const downloadedFiles = finalFiles.filter(f => !initialFiles.includes(f) && (f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx')));
         console.log('📋 RESUMEN FINAL:');
         console.log('=================');
@@ -237,10 +265,10 @@ async function giveFullManualControl(page, downloadPath) {
             if (pdfFile) {
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                 const newName = `AI_Report_LA_LECTURA_${timestamp}.pdf`;
-                const oldPath = path.join(downloadPath, pdfFile);
-                const newPath = path.join(downloadPath, newName);
+                const oldPath = path_1.default.join(downloadPath, pdfFile);
+                const newPath = path_1.default.join(downloadPath, newName);
                 try {
-                    fs.renameSync(oldPath, newPath);
+                    fs_1.default.renameSync(oldPath, newPath);
                     console.log(`📝 Archivo renombrado: ${newName}`);
                 }
                 catch (error) {

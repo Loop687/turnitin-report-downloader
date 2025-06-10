@@ -1,9 +1,14 @@
-import express from 'express';
-import path from 'path';
-import fs from 'fs';
-import cors from 'cors';
-import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader.js';
-const app = express();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const cors_1 = __importDefault(require("cors"));
+const coordinate_based_downloader_1 = require("./scripts/coordinate-based-downloader");
+const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3003', 10);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const corsOptions = {
@@ -14,10 +19,10 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 };
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
+app.use((0, cors_1.default)(corsOptions));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
 app.post('/api/student/request-ai-download', async (req, res) => {
     const { targetWorkTitle, submissionId } = req.body;
     if (!submissionId && !targetWorkTitle) {
@@ -31,13 +36,13 @@ app.post('/api/student/request-ai-download', async (req, res) => {
     console.log(`[API] Solicitud de descarga recibida usando ${searchType}: ${searchCriteria}`);
     try {
         const result = submissionId
-            ? await coordinateBasedDownloader(undefined, submissionId)
-            : await coordinateBasedDownloader(targetWorkTitle, undefined);
+            ? await (0, coordinate_based_downloader_1.coordinateBasedDownloader)(undefined, submissionId)
+            : await (0, coordinate_based_downloader_1.coordinateBasedDownloader)(targetWorkTitle, undefined);
         if (result.success && result.filePath) {
             const confirmedFilePath = result.filePath;
-            if (fs.existsSync(confirmedFilePath)) {
+            if (fs_1.default.existsSync(confirmedFilePath)) {
                 console.log(`[API] Descarga exitosa usando ${searchType}. Enviando archivo: ${confirmedFilePath}`);
-                res.download(confirmedFilePath, path.basename(confirmedFilePath), (err) => {
+                res.download(confirmedFilePath, path_1.default.basename(confirmedFilePath), (err) => {
                     if (err) {
                         console.error("[API] Error al enviar el archivo:", err);
                         if (!res.headersSent) {
@@ -45,7 +50,7 @@ app.post('/api/student/request-ai-download', async (req, res) => {
                         }
                     }
                     else {
-                        console.log(`[API] Archivo ${path.basename(confirmedFilePath)} enviado correctamente usando ${searchType}.`);
+                        console.log(`[API] Archivo ${path_1.default.basename(confirmedFilePath)} enviado correctamente usando ${searchType}.`);
                         console.log(`[API] ✅ Navegador mantenido abierto para futuras solicitudes de descarga.`);
                     }
                 });
@@ -68,7 +73,7 @@ app.post('/api/student/request-ai-download', async (req, res) => {
 app.post('/api/admin/close-browser', async (req, res) => {
     try {
         console.log('[API] Solicitud de cierre de sesión del navegador recibida.');
-        await closeBrowserSession();
+        await (0, coordinate_based_downloader_1.closeBrowserSession)();
         res.json({ success: true, message: 'Sesión del navegador cerrada exitosamente.' });
     }
     catch (error) {
@@ -78,11 +83,11 @@ app.post('/api/admin/close-browser', async (req, res) => {
 });
 app.get('/', (_req, res) => {
     if (IS_PRODUCTION) {
-        res.sendFile(path.join(__dirname, '../public/index.html'));
+        res.sendFile(path_1.default.join(__dirname, '../public/index.html'));
     }
     else {
-        const indexPath = path.join(__dirname, '../public/index.html');
-        let htmlContent = fs.readFileSync(indexPath, 'utf8');
+        const indexPath = path_1.default.join(__dirname, '../public/index.html');
+        let htmlContent = fs_1.default.readFileSync(indexPath, 'utf8');
         const devNotice = `
         <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #4caf50;">
             <h4>🚀 Entorno de Desarrollo</h4>
@@ -137,12 +142,12 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 process.on('SIGTERM', async () => {
     console.log('🔄 Recibida señal SIGTERM, cerrando servidor...');
-    await closeBrowserSession();
+    await (0, coordinate_based_downloader_1.closeBrowserSession)();
     process.exit(0);
 });
 process.on('SIGINT', async () => {
     console.log('🔄 Recibida señal SIGINT, cerrando servidor...');
-    await closeBrowserSession();
+    await (0, coordinate_based_downloader_1.closeBrowserSession)();
     process.exit(0);
 });
-export default app;
+exports.default = app;

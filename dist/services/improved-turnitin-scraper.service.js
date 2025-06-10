@@ -1,15 +1,21 @@
-import puppeteer from 'puppeteer';
-import fs from 'fs';
-import path from 'path';
-import { ReportStorageService } from './report-storage.service';
-export class ImprovedTurnitinScraperService {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ImprovedTurnitinScraperService = void 0;
+const puppeteer_1 = __importDefault(require("puppeteer"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const report_storage_service_1 = require("./report-storage.service");
+class ImprovedTurnitinScraperService {
     constructor(debugMode = false) {
         this.browser = null;
-        this.reportStorageService = new ReportStorageService();
-        this.downloadPath = path.join(__dirname, '..', '..', 'temp-downloads');
+        this.reportStorageService = new report_storage_service_1.ReportStorageService();
+        this.downloadPath = path_1.default.join(__dirname, '..', '..', 'temp-downloads');
         this.debugMode = debugMode;
-        if (!fs.existsSync(this.downloadPath)) {
-            fs.mkdirSync(this.downloadPath, { recursive: true });
+        if (!fs_1.default.existsSync(this.downloadPath)) {
+            fs_1.default.mkdirSync(this.downloadPath, { recursive: true });
         }
     }
     getDownloadPath() {
@@ -17,7 +23,7 @@ export class ImprovedTurnitinScraperService {
     }
     async initializeBrowser() {
         console.log('🚀 Iniciando navegador mejorado para scraping...');
-        this.browser = await puppeteer.launch({
+        this.browser = await puppeteer_1.default.launch({
             headless: false,
             defaultViewport: null,
             args: [
@@ -201,8 +207,8 @@ export class ImprovedTurnitinScraperService {
                     console.log('');
                 });
             }
-            const debugFile = path.join(this.downloadPath, `ai-button-debug-${Date.now()}.json`);
-            fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+            const debugFile = path_1.default.join(this.downloadPath, `ai-button-debug-${Date.now()}.json`);
+            fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
             console.log(`💾 Información de debug guardada en: ${debugFile}`);
         }
         catch (error) {
@@ -291,8 +297,8 @@ export class ImprovedTurnitinScraperService {
                     console.log('');
                 });
             }
-            const debugFile = path.join(this.downloadPath, `ai-button-debug-carta-${Date.now()}.json`);
-            fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+            const debugFile = path_1.default.join(this.downloadPath, `ai-button-debug-carta-${Date.now()}.json`);
+            fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
             console.log(`💾 Información de debug guardada en: ${debugFile}`);
         }
         catch (error) {
@@ -448,3 +454,4 @@ export class ImprovedTurnitinScraperService {
         }
     }
 }
+exports.ImprovedTurnitinScraperService = ImprovedTurnitinScraperService;

@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function manualAIButtonFinder() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -357,7 +385,7 @@ async function manualAIButtonFinder() {
                                         const files = fs.readdirSync(downloadPath);
                                         const pdfFiles = files.filter((f) => f.endsWith('.pdf'));
                                         const recentFiles = files.filter((f) => {
-                                            const filePath = path.join(downloadPath, f);
+                                            const filePath = path_1.default.join(downloadPath, f);
                                             const stats = fs.statSync(filePath);
                                             const now = new Date();
                                             const fileTime = new Date(stats.mtime);
@@ -370,7 +398,7 @@ async function manualAIButtonFinder() {
                                             console.log('\n✅ ¡DESCARGA EXITOSA!');
                                             console.log('📁 Archivos descargados recientemente:');
                                             recentFiles.forEach((file, index) => {
-                                                const filePath = path.join(downloadPath, file);
+                                                const filePath = path_1.default.join(downloadPath, file);
                                                 const stats = fs.statSync(filePath);
                                                 console.log(`   ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                                             });
@@ -378,8 +406,8 @@ async function manualAIButtonFinder() {
                                             if (recentPdf) {
                                                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                                                 const newName = `AI_Report_${workTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`;
-                                                const oldPath = path.join(downloadPath, recentPdf);
-                                                const newPath = path.join(downloadPath, newName);
+                                                const oldPath = path_1.default.join(downloadPath, recentPdf);
+                                                const newPath = path_1.default.join(downloadPath, newName);
                                                 try {
                                                     fs.renameSync(oldPath, newPath);
                                                     console.log(`📝 Archivo renombrado a: ${newName}`);
@@ -478,8 +506,8 @@ async function manualAIButtonFinder() {
             selectedElement: selectedElement,
             timestamp: new Date().toISOString()
         };
-        const debugFile = path.join(scraper.getDownloadPath(), `ai-finder-debug-${Date.now()}.json`);
-        fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+        const debugFile = path_1.default.join(scraper.getDownloadPath(), `ai-finder-debug-${Date.now()}.json`);
+        fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
         console.log(`\n💾 Información de debug guardada en: ${debugFile}`);
     }
     catch (error) {

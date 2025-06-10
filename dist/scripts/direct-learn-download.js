@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function directLearnDownload() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -130,8 +158,8 @@ async function directLearnDownload() {
                 console.log(`   ${index + 1}. <${el.tag}> class="${el.class}" id="${el.id}" text="${el.text}"`);
             });
         }
-        const sessionFile = path.join(scraper.getDownloadPath(), `direct_learning_session_${session.sessionId}.json`);
-        fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+        const sessionFile = path_1.default.join(scraper.getDownloadPath(), `direct_learning_session_${session.sessionId}.json`);
+        fs_1.default.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
         console.log(`💾 Sesión guardada: ${sessionFile}`);
     }
     catch (error) {
@@ -170,25 +198,25 @@ async function startLearningMode(page, downloadPath, session) {
         console.log('   ✅ Movimientos del mouse');
         console.log('   ✅ Tiempos de espera');
         console.log('');
-        const initialScreenshot = path.join(downloadPath, `direct_learning_initial_${session.sessionId}.png`);
+        const initialScreenshot = path_1.default.join(downloadPath, `direct_learning_initial_${session.sessionId}.png`);
         await page.screenshot({ path: initialScreenshot, fullPage: true });
         console.log(`📸 Screenshot inicial: ${initialScreenshot}`);
         await setupAdvancedActionListeners(page, session);
-        const initialFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+        const initialFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
         console.log('🔴 GRABACIÓN INICIADA');
         console.log('=====================');
         console.log('Realiza tus acciones en el navegador para descargar el reporte...');
         console.log('');
         await askQuestion('⏸️ Presiona ENTER cuando hayas completado la descarga: ');
         console.log('🔴 GRABACIÓN DETENIDA');
-        const finalFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+        const finalFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
         const newFiles = finalFiles.filter(f => !initialFiles.includes(f));
         session.downloadedFiles = newFiles.filter(f => f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx'));
         if (session.downloadedFiles.length > 0) {
             console.log('✅ Archivos relevantes descargados:');
             session.downloadedFiles.forEach((file, index) => {
-                const filePath = path.join(downloadPath, file);
-                const stats = fs.statSync(filePath);
+                const filePath = path_1.default.join(downloadPath, file);
+                const stats = fs_1.default.statSync(filePath);
                 console.log(`   ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
             });
             session.success = true;
@@ -201,7 +229,7 @@ async function startLearningMode(page, downloadPath, session) {
             }
             session.success = false;
         }
-        const finalScreenshot = path.join(downloadPath, `direct_learning_final_${session.sessionId}.png`);
+        const finalScreenshot = path_1.default.join(downloadPath, `direct_learning_final_${session.sessionId}.png`);
         await page.screenshot({ path: finalScreenshot, fullPage: true });
         console.log(`📸 Screenshot final: ${finalScreenshot}`);
         session.endTime = Date.now();
@@ -362,8 +390,8 @@ ${session.userActions.map((action, index) => {
         return false;
     }
 }`;
-    const scriptPath = path.join(downloadPath, `ai_download_sequence_${session.sessionId}.ts`);
-    fs.writeFileSync(scriptPath, scriptContent);
+    const scriptPath = path_1.default.join(downloadPath, `ai_download_sequence_${session.sessionId}.ts`);
+    fs_1.default.writeFileSync(scriptPath, scriptContent);
     console.log(`📝 Script automático generado: ${scriptPath}`);
     console.log('💡 Este script se puede integrar en el sistema principal');
 }

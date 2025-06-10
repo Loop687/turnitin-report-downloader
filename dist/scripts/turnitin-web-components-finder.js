@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function turnitinWebComponentsFinder() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -138,7 +166,7 @@ async function searchTurnitinWebComponents(page, downloadPath) {
     try {
         console.log('\n🔧 BÚSQUEDA EN WEB COMPONENTS DE TURNITIN');
         console.log('==========================================');
-        const screenshotPath = path.join(downloadPath, `turnitin_web_components_${Date.now()}.png`);
+        const screenshotPath = path_1.default.join(downloadPath, `turnitin_web_components_${Date.now()}.png`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`📸 Screenshot: ${screenshotPath}`);
         const specificXPath = '/body/tii-ai-writing-app//tii-router//aiwa-home//tii-sws-submission-workspace/tii-sws-header/tii-sws-download-btn-mfe';
@@ -270,28 +298,28 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                 const shouldClick = await askQuestion('¿Hacer clic en el elemento encontrado con XPath específico? (s/n): ');
                 if (shouldClick.toLowerCase() === 's') {
                     console.log('🖱️ Haciendo clic...');
-                    const filesBefore = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+                    const filesBefore = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
                     await specificElements[0].click();
                     console.log('✅ Clic realizado');
                     console.log('⏳ Esperando descarga (15 segundos)...');
                     await page.waitForTimeout(15000);
-                    const filesAfter = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+                    const filesAfter = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
                     const newFiles = filesAfter.filter(f => !filesBefore.includes(f));
                     if (newFiles.length > 0) {
                         console.log('🎉 ¡DESCARGA EXITOSA!');
                         newFiles.forEach((file, index) => {
-                            const filePath = path.join(downloadPath, file);
-                            const stats = fs.statSync(filePath);
+                            const filePath = path_1.default.join(downloadPath, file);
+                            const stats = fs_1.default.statSync(filePath);
                             console.log(`   📄 ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                         });
                         const pdfFile = newFiles.find(f => f.endsWith('.pdf'));
                         if (pdfFile) {
                             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                             const newName = `AI_Report_LA_LECTURA_${timestamp}.pdf`;
-                            const oldPath = path.join(downloadPath, pdfFile);
-                            const newPath = path.join(downloadPath, newName);
+                            const oldPath = path_1.default.join(downloadPath, pdfFile);
+                            const newPath = path_1.default.join(downloadPath, newName);
                             try {
-                                fs.renameSync(oldPath, newPath);
+                                fs_1.default.renameSync(oldPath, newPath);
                                 console.log(`📝 Archivo renombrado: ${newName}`);
                             }
                             catch (error) {
@@ -341,8 +369,8 @@ async function searchTurnitinWebComponents(page, downloadPath) {
         catch (error) {
             console.log(`❌ Error probando XPath específico: ${error}`);
         }
-        const analysisFile = path.join(downloadPath, `turnitin_web_components_analysis_${Date.now()}.json`);
-        fs.writeFileSync(analysisFile, JSON.stringify(webComponentAnalysis, null, 2));
+        const analysisFile = path_1.default.join(downloadPath, `turnitin_web_components_analysis_${Date.now()}.json`);
+        fs_1.default.writeFileSync(analysisFile, JSON.stringify(webComponentAnalysis, null, 2));
         console.log(`\n💾 Análisis completo guardado en: ${analysisFile}`);
     }
     catch (error) {

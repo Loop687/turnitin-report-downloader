@@ -1,9 +1,37 @@
-import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
-import * as readline from 'readline';
-import fs from 'fs';
-import path from 'path';
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
+const readline = __importStar(require("readline"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 async function interactiveAIPage() {
-    const scraper = new ImprovedTurnitinScraperService(true);
+    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -131,7 +159,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
     };
     try {
         console.log('\n🔍 ANALIZANDO ELEMENTOS ACTUALES...');
-        const screenshotPath = path.join(downloadPath, `ai_page_interactive_${Date.now()}.png`);
+        const screenshotPath = path_1.default.join(downloadPath, `ai_page_interactive_${Date.now()}.png`);
         await page.screenshot({
             path: screenshotPath,
             fullPage: true
@@ -245,7 +273,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
                 return;
             }
             else if (choice.toLowerCase() === 's') {
-                const newScreenshot = path.join(downloadPath, `ai_page_manual_${Date.now()}.png`);
+                const newScreenshot = path_1.default.join(downloadPath, `ai_page_manual_${Date.now()}.png`);
                 await page.screenshot({ path: newScreenshot, fullPage: true });
                 console.log(`📸 Nuevo screenshot: ${newScreenshot}`);
                 rl.close();
@@ -269,7 +297,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
                 console.log(`\n🖱️ Haciendo clic en elemento ${elementIndex + 1}: <${selectedElement.tag}>`);
                 console.log(`   📝 Texto: "${selectedElement.text}"`);
                 console.log(`   🎯 XPath: ${selectedElement.xpath}`);
-                const filesBefore = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+                const filesBefore = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
                 try {
                     const xpathElements = await page.$x(selectedElement.xpath);
                     if (xpathElements.length > 0) {
@@ -284,7 +312,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
                     await page.waitForTimeout(8000);
                     const newUrl = page.url();
                     console.log(`📍 URL después del clic: ${newUrl}`);
-                    const filesAfter = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
+                    const filesAfter = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
                     const newFiles = filesAfter.filter(f => !filesBefore.includes(f));
                     if (newFiles.length > 0) {
                         console.log('🎉 ¡DESCARGA DETECTADA!');

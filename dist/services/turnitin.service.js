@@ -1,4 +1,7 @@
-export class TurnitinService {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TurnitinService = void 0;
+class TurnitinService {
     constructor(apiKey) {
         this.apiKey = apiKey;
         this.baseUrl = 'https://api.turnitin.com';
@@ -30,3 +33,4 @@ export class TurnitinService {
         return await response.blob();
     }
 }
+exports.TurnitinService = TurnitinService;
