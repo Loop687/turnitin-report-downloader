@@ -1,14 +1,22 @@
+console.log("<<<<< EXECUTING COMPILED dist/app.js >>>>>"); // Log de diagnóstico
+console.log(`Node.js version: ${process.version}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`Current working directory: ${process.cwd()}`);
+console.log("<<<<< END OF DIAGNOSTIC LOGS >>>>>");
+
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 import cors, { CorsOptions } from 'cors';
-
-// Fix import path for production
-import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
+import axios from 'axios'; // <--- AÑADIR AXIOS
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// URL de tu trabajador local (expuesto por ngrok). Configúralo en las variables de entorno de Render.
+const LOCAL_WORKER_URL = process.env.LOCAL_WORKER_URL;
 
 // 🔥 NUEVO: Configuración para producción
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -33,54 +41,69 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Nueva ruta para la solicitud de descarga del estudiante
 app.post('/api/student/request-ai-download', async (req, res) => {
     const { targetWorkTitle, submissionId } = req.body;
+    const searchCriteria = submissionId || targetWorkTitle;
+    const searchType = submissionId ? 'Submission ID' : 'Título';
 
-    // Priorizar Submission ID sobre título
-    if (!submissionId && !targetWorkTitle) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Se requiere el Submission ID (recomendado) o el título del trabajo." 
-        });
+    console.log(`[API] Solicitud de descarga recibida usando ${searchType}: ${searchCriteria}`);
+
+    if (!LOCAL_WORKER_URL) {
+        console.error('❌ LOCAL_WORKER_URL no está configurado en las variables de entorno.');
+        return res.status(500).json({ message: 'Error de configuración del servidor: El trabajador local no está configurado.' });
     }
 
-    const searchCriteria = submissionId || targetWorkTitle;
-    const searchType = submissionId ? 'Submission ID' : 'título';
-    
-    console.log(`[API] Solicitud de descarga recibida usando ${searchType}: ${searchCriteria}`);
-    
+    if (!searchCriteria) {
+        return res.status(400).json({ message: 'Se requiere Submission ID o título del trabajo.' });
+    }
+
     try {
-        // Pasar solo el parámetro relevante
-        const result = submissionId 
-            ? await coordinateBasedDownloader(undefined, submissionId) // Solo Submission ID
-            : await coordinateBasedDownloader(targetWorkTitle, undefined); // Solo título
-
-        if (result.success && result.filePath) {
-            const confirmedFilePath = result.filePath;
-
-            if (fs.existsSync(confirmedFilePath)) {
-                console.log(`[API] Descarga exitosa usando ${searchType}. Enviando archivo: ${confirmedFilePath}`);
-                
-                res.download(confirmedFilePath, path.basename(confirmedFilePath), (err) => {
-                    if (err) {
-                        console.error("[API] Error al enviar el archivo:", err);
-                        if (!res.headersSent) {
-                           res.status(500).json({ success: false, message: "Error al enviar el archivo." });
-                        }
-                    } else {
-                        console.log(`[API] Archivo ${path.basename(confirmedFilePath)} enviado correctamente usando ${searchType}.`);
-                        console.log(`[API] ✅ Navegador mantenido abierto para futuras solicitudes de descarga.`);
-                    }
-                });
-            } else {
-                console.error(`[API] Archivo no encontrado en la ruta: ${confirmedFilePath}`);
-                res.status(404).json({ success: false, message: `Archivo descargado no encontrado en el servidor: ${confirmedFilePath}` });
+        console.log(`📡 Enviando solicitud al trabajador local: ${LOCAL_WORKER_URL}/process-download`);
+        const workerResponse = await axios.post(`${LOCAL_WORKER_URL}/process-download`, 
+            { 
+                submissionId: submissionId, 
+                targetWorkTitle: targetWorkTitle 
+            },
+            {
+                responseType: 'arraybuffer', // Para recibir el archivo PDF
+                timeout: 300000 // Timeout de 5 minutos para la operación del trabajador
             }
+        );
+
+        if (workerResponse.status === 200 && workerResponse.headers['content-type'] === 'application/pdf') {
+            console.log('✅ PDF recibido del trabajador local.');
+            res.setHeader('Content-Type', 'application/pdf');
+            
+            let filename = `report_${submissionId || targetWorkTitle.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+            const contentDisposition = workerResponse.headers['content-disposition'];
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?(.+)"?/i);
+                if (match && match[1]) filename = match[1];
+            }
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.send(Buffer.from(workerResponse.data));
         } else {
-            console.log(`[API] Falló la descarga usando ${searchType}: ${result.message}`);
-            res.status(500).json({ success: false, message: result.message });
+            // Si el trabajador devuelve un JSON con error
+            const errorData = JSON.parse(Buffer.from(workerResponse.data).toString('utf8'));
+            console.error('❌ Error desde el trabajador local:', errorData.message || workerResponse.status);
+            res.status(workerResponse.status || 500).json({ message: errorData.message || 'Error al procesar la solicitud en el trabajador local.' });
         }
+
     } catch (error: any) {
-        console.error("[API] Error catastrófico durante la descarga:", error);
-        res.status(500).json({ success: false, message: `Error interno del servidor: ${error.message}` });
+        console.error('[API] Error contactando al trabajador local o procesando su respuesta:', error.message);
+        if (error.response) {
+            // El servidor del trabajador local respondió con un código de error
+            try {
+                const errorResponseData = JSON.parse(Buffer.from(error.response.data).toString('utf8'));
+                 res.status(error.response.status || 500).json({ message: `Error del trabajador local: ${errorResponseData.message || error.message}` });
+            } catch (parseError) {
+                 res.status(error.response.status || 500).json({ message: `Error del trabajador local: ${error.message}` });
+            }
+        } else if (error.request) {
+            // La solicitud se hizo pero no se recibió respuesta (ej. ngrok caído, trabajador no responde)
+            res.status(503).json({ message: 'El servicio del trabajador local no está disponible o no respondió a tiempo.' });
+        } else {
+            // Algo más causó el error
+            res.status(500).json({ message: `Error interno del servidor: ${error.message}` });
+        }
     }
 });
 
@@ -175,13 +198,13 @@ app.listen(PORT, '0.0.0.0', () => {
 // 🔥 NUEVO: Graceful shutdown
 process.on('SIGTERM', async () => {
     console.log('🔄 Recibida señal SIGTERM, cerrando servidor...');
-    await closeBrowserSession();
+    // await closeBrowserSession(); // Ya no se necesita aquí
     process.exit(0);
 });
 
 process.on('SIGINT', async () => {
     console.log('🔄 Recibida señal SIGINT, cerrando servidor...');
-    await closeBrowserSession();
+    // await closeBrowserSession(); // Ya no se necesita aquí
     process.exit(0);
 });
 
