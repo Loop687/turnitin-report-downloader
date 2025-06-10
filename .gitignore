@@ -1,1 +1,16 @@
-node_modules
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+temp-downloads/
+uploads/
+tracking-data/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
