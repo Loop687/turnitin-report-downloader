@@ -11,12 +11,15 @@ import multer from 'multer';
 import cors, { CorsOptions } from 'cors';
 import axios from 'axios';
 
-// Local worker architecture - no direct puppeteer imports
+// Ya no importamos coordinateBasedDownloader aquí - usamos el trabajador local
 // import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// URL del trabajador local (expuesto por ngrok)
+const LOCAL_WORKER_URL = process.env.LOCAL_WORKER_URL;
 
 // CORS configurado para producción
 const corsOptions: CorsOptions = {
@@ -61,7 +64,7 @@ app.get('/api/info', (req, res) => {
     });
 });
 
-// Endpoint principal para estudiantes
+// Endpoint principal para estudiantes (ACTUALIZADO para usar trabajador local)
 app.post('/api/student/request-ai-download', async (req, res) => {
     const { targetWorkTitle, submissionId } = req.body;
     const searchCriteria = submissionId || targetWorkTitle;
