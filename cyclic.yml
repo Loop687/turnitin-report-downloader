@@ -1,0 +1,11 @@
+version: 1
+build:
+  commands:
+    - npm install
+    - npm run build
+runtime:
+  command: npm start
+  env:
+    NODE_ENV: production
+    PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+    PUPPETEER_ARGS: "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage"

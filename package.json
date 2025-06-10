@@ -1,0 +1,68 @@
+{
+  "name": "turnitin-report-downloader",
+  "version": "1.0.0",
+  "description": "A web application for students to download Turnitin AI detection reports.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "dev": "npx ts-node --watch src/app.ts",
+    "scrape": "npx ts-node src/scripts/turnitin-scraper.ts",
+    "scrape-debug": "npx ts-node src/scripts/turnitin-scraper.ts --debug",
+    "learn": "npx ts-node src/scripts/interactive-learning.ts",
+    "learn-replay": "npx ts-node src/scripts/replay-learned-session.ts",
+    "smart-scrape": "npx ts-node src/scripts/smart-scraper.ts",
+    "find-ai-button": "npx ts-node src/scripts/manual-ai-button-finder.ts",
+    "download-ai-report": "npx ts-node src/scripts/complete-ai-downloader.ts",
+    "analyze-ai-page": "npx ts-node src/scripts/analyze-ai-page.ts",
+    "interactive-ai": "npx ts-node src/scripts/interactive-ai-page.ts",
+    "direct-ai": "npx ts-node src/scripts/direct-ai-downloader.ts",
+    "turnitin-components": "npx ts-node src/scripts/turnitin-web-components-finder.ts",
+    "learn-download": "npx ts-node src/scripts/learn-download-actions.ts",
+    "direct-learn": "npx ts-node src/scripts/direct-learn-download.ts",
+    "guided-manual": "npx ts-node src/scripts/manual-guided-download.ts",
+    "ultra-simple": "npx ts-node src/scripts/ultra-simple-download.ts",
+    "ultimate-detector": "npx ts-node src/scripts/ultimate-download-detector.ts",
+    "find-files": "npx ts-node src/scripts/find-downloaded-files.ts",
+    "auto-download": "npx ts-node src/scripts/fully-automated-ai-download.ts",
+    "coordinate-download": "npx ts-node src/scripts/coordinate-based-downloader.ts",
+    "railway:build": "npm run build",
+    "railway:start": "npm start",
+    "vercel-build": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.5-lts.1",
+    "puppeteer": "^21.11.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.31",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.11",
+    "@types/jest": "^27.0.0",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^14.14.37",
+    "jest": "^27.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  },
+  "keywords": [
+    "turnitin",
+    "report",
+    "downloader",
+    "education"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

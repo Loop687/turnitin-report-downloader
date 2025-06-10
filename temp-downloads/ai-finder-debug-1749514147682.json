@@ -1,0 +1,113 @@
+{
+  "workTitle": "LA LECTURA.docx",
+  "pageUrl": "https://ev.turnitin.com/app/carta/en_us/?o=2695486255&lang=en_us&ro=103&u=1009014739",
+  "totalElements": 26,
+  "aiElements": [
+    {
+      "index": 1,
+      "category": "Turnitin AI",
+      "priority": 1,
+      "tagName": "TII-AIW-BUTTON",
+      "text": "[Sin texto]",
+      "ariaLabel": "[Sin aria-label]",
+      "title": "[Sin title]",
+      "className": "hydrated",
+      "id": "[Sin ID]",
+      "xpath": "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
+      "cssSelector": "tii-aiw-button.hydrated",
+      "visible": true,
+      "turnitinAttributes": {
+        "type": "ev",
+        "status": "success",
+        "percent": "100",
+        "submissionTrn": "trn:oid:::1:3272334500"
+      },
+      "outerHTML": "<tii-aiw-button type=\"ev\" status=\"success\" class=\"hydrated\" style=\"display: block;\" submission-trn=\"trn:oid:::1:3272334500\" percent=\"100\"></tii-aiw-button>..."
+    },
+    {
+      "index": 2,
+      "category": "Turnitin AI",
+      "priority": 1,
+      "tagName": "TII-AIW-BUTTON",
+      "text": "[Sin texto]",
+      "ariaLabel": "[Sin aria-label]",
+      "title": "[Sin title]",
+      "className": "hydrated",
+      "id": "[Sin ID]",
+      "xpath": "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
+      "cssSelector": "tii-aiw-button.hydrated",
+      "visible": true,
+      "turnitinAttributes": {
+        "type": "ev",
+        "status": "success",
+        "percent": "100",
+        "submissionTrn": "trn:oid:::1:3272334500"
+      },
+      "outerHTML": "<tii-aiw-button type=\"ev\" status=\"success\" class=\"hydrated\" style=\"display: block;\" submission-trn=\"trn:oid:::1:3272334500\" percent=\"100\"></tii-aiw-button>..."
+    },
+    {
+      "index": 3,
+      "category": "Turnitin AI",
+      "priority": 1,
+      "tagName": "TII-AIW-BUTTON",
+      "text": "[Sin texto]",
+      "ariaLabel": "[Sin aria-label]",
+      "title": "[Sin title]",
+      "className": "hydrated",
+      "id": "[Sin ID]",
+      "xpath": "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
+      "cssSelector": "tii-aiw-button.hydrated",
+      "visible": true,
+      "turnitinAttributes": {
+        "type": "ev",
+        "status": "success",
+        "percent": "100",
+        "submissionTrn": "trn:oid:::1:3272334500"
+      },
+      "outerHTML": "<tii-aiw-button type=\"ev\" status=\"success\" class=\"hydrated\" style=\"display: block;\" submission-trn=\"trn:oid:::1:3272334500\" percent=\"100\"></tii-aiw-button>..."
+    },
+    {
+      "index": 4,
+      "category": "Turnitin AI",
+      "priority": 1,
+      "tagName": "TII-AIW-BUTTON",
+      "text": "[Sin texto]",
+      "ariaLabel": "[Sin aria-label]",
+      "title": "[Sin title]",
+      "className": "hydrated",
+      "id": "[Sin ID]",
+      "xpath": "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
+      "cssSelector": "tii-aiw-button.hydrated",
+      "visible": true,
+      "turnitinAttributes": {
+        "type": "ev",
+        "status": "success",
+        "percent": "100",
+        "submissionTrn": "trn:oid:::1:3272334500"
+      },
+      "outerHTML": "<tii-aiw-button type=\"ev\" status=\"success\" class=\"hydrated\" style=\"display: block;\" submission-trn=\"trn:oid:::1:3272334500\" percent=\"100\"></tii-aiw-button>..."
+    }
+  ],
+  "selectedElement": {
+    "index": 4,
+    "category": "Turnitin AI",
+    "priority": 1,
+    "tagName": "TII-AIW-BUTTON",
+    "text": "[Sin texto]",
+    "ariaLabel": "[Sin aria-label]",
+    "title": "[Sin title]",
+    "className": "hydrated",
+    "id": "[Sin ID]",
+    "xpath": "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
+    "cssSelector": "tii-aiw-button.hydrated",
+    "visible": true,
+    "turnitinAttributes": {
+      "type": "ev",
+      "status": "success",
+      "percent": "100",
+      "submissionTrn": "trn:oid:::1:3272334500"
+    },
+    "outerHTML": "<tii-aiw-button type=\"ev\" status=\"success\" class=\"hydrated\" style=\"display: block;\" submission-trn=\"trn:oid:::1:3272334500\" percent=\"100\"></tii-aiw-button>..."
+  },
+  "timestamp": "2025-06-10T00:09:07.680Z"
+}

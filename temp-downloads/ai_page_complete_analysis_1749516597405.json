@@ -1,0 +1,35 @@
+{
+  "url": "https://awo-usw2.integrity.turnitin.com/trn:oid:::1:3272334500",
+  "title": "Turnitin AI Writing Detection",
+  "totalClickableElements": 1,
+  "visibleClickableElements": 1,
+  "potentialDownloadButtons": [],
+  "allClickableElements": [
+    {
+      "globalIndex": 1,
+      "tag": "BUTTON",
+      "text": "[Sin texto]",
+      "innerText": "[Sin innerText]",
+      "ariaLabel": "Knowledge Center Bot, also known as KC Bot is an onboarding assistant that allows you to see the list of onboarding items in one place for quick and easy reference. This improves your in-app experience.",
+      "title": "[Sin title]",
+      "className": "apt-widget-dragging-handle dragging-handle",
+      "id": "[Sin ID]",
+      "href": "[No es enlace]",
+      "type": "submit",
+      "visible": true,
+      "xpath": "//body/div[5]/div/div[1]/div/button",
+      "cssSelector": "button.apt-widget-dragging-handle.dragging-handle",
+      "outerHTML": "<button aria-label=\"Knowledge Center Bot, also known as KC Bot is an onboarding assistant that allows you to see the list of onboarding items in one place for quick and easy reference. This improves y...",
+      "rect": {
+        "x": 1385.25,
+        "y": 588.4500122070312,
+        "width": 50.75,
+        "height": 50.75
+      },
+      "isLikelyDownloadButton": false
+    }
+  ],
+  "turnitinSpecificElements": [],
+  "pageText": "  ",
+  "htmlStructure": " <tii-ai-writing-app class=\"hydrated\"></tii-ai-writing-app> <div class=\"apt-guide-overlay-top\" style=\"display: none; visibility: hidden;\"></div><div class=\"apt-guide-overlay-bottom\" style=\"display: none; visibility: hidden;\"></div><div class=\"apt-guide-overlay-left\" style=\"display: none; visibility: hidden;\"></div><div class=\"apt-guide-overlay-right\" style=\"display: none; visibility: hidden;\"></div><div id=\"apt-widget\" class=\"apt-widget-top-container\"><div class=\"apt-widget\"><span id=\"apt-widget-animation-container\" class=\"apt-widget-animation-container\"></span><div id=\"apt-widget-controller\" class=\"apt-widget-dragging-element dragging-element\" style=\"inset: auto 100px 100px auto; z-index: 2147483642; transform: translate(0px, 0px);\"><div class=\"apt-widget-controller-content\" style=\"display: flex;\"><button aria-label=\"Knowledge Center Bot, also known as KC Bot is an onboarding assistant that allows you to see the list of onboarding items in one place for quick and easy reference. This improves your in-app experience.\" class=\"apt-widget-dragging-handle dragging-handle\"></button><iframe role=\"img\" aria-hidden=\"true\" tabindex=\"-1\" name=\"widget-icon\" class=\"apt-widget-icon-frame\" scrolling=\"no\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" title=\"Knowledge Center Bot, also known as KC Bot is an onboarding assistant that allows you to see the list of onboarding items in one place for quick and easy reference. This improves your in-app experience.\" style=\"height: 50.75px; width: 50.75px;\"></iframe></div></div><div></div></div></div><iframe class=\"apt-widget-frame\" data-sdkconfig=\"{&quot;apiKey&quot;:&quot;AP-H6XRJYUGEBGP-2&quot;,&quot;aptId&quot;:&quot;204f8060-ee15-46df-8be3-2fa457ea6669&quot;,&quot;initialConfig&quot;:{&quot;type&quot;:&quot;V1&quot;,&quot;kcId&quot;:&quot;56c95b62-82d7-43c6-87ba-c86226c5a7ab&quot;,&quot;subscriptionId&quot;:&quot;24255099-03bd-4ac1-8da1-ad6d773b3330&quot;,&quot;propertyGroupId&quot;:&quot;H6XRJYUGEBGP&quot;,&quot;enabled&quot;:true,..."
+}

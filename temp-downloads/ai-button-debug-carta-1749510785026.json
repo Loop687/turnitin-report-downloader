@@ -1,0 +1,16 @@
+{
+  "totalButtons": 1,
+  "aiRelatedButtons": [],
+  "tiiComponents": [
+    {
+      "index": 0,
+      "tag": "TII-AIW-BUTTON",
+      "label": "",
+      "parent": "DIV",
+      "parentClasses": "sc-view ai-writing-view tii-theme carta sc-large",
+      "parentAttributes": "id=\"sc5115\" class=\"sc-view ai-writing-view tii-theme carta sc-large\" style=\"left: 0px; top: 376px; height: 77px; width: 42px;\"",
+      "innerHTML": ""
+    }
+  ],
+  "currentUrl": "https://ev.turnitin.com/app/carta/en_us/?ro=103&u=1009014739&lang=en_us&o=2695486255"
+}

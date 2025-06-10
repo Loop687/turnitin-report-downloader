@@ -1,0 +1,60 @@
+{
+  "sessionId": "session-1749508194509",
+  "startUrl": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+  "targetGoal": "Descargar reporte de IA desde trabajo de estudiante",
+  "actions": [
+    {
+      "step": 1,
+      "action": "navigate",
+      "elementInfo": {},
+      "url": "https://www.turnitin.com/login_page.asp?lang=en_us",
+      "screenshot": "step-01-navigate.png",
+      "timestamp": "2025-06-09T22:29:57.689Z",
+      "description": "Navegación a bandeja de entrada de Turnitin"
+    },
+    {
+      "step": 2,
+      "action": "wait",
+      "elementInfo": {},
+      "url": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+      "screenshot": "step-02-wait.png",
+      "timestamp": "2025-06-09T22:30:43.471Z",
+      "description": "Esperando login manual del usuario"
+    },
+    {
+      "step": 3,
+      "action": "click",
+      "elementInfo": {
+        "text": "La LECTURA.docx"
+      },
+      "url": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+      "screenshot": "step-03-click.png",
+      "timestamp": "2025-06-09T22:31:59.792Z",
+      "description": "Usuario hizo clic en trabajo: \"La LECTURA.docx\""
+    },
+    {
+      "step": 4,
+      "action": "click",
+      "elementInfo": {
+        "text": "<button class=\"ev\" aria-label=\"AI 100%\" data-px=\"AIWIndicatorSuccess\"><tii-aiw-ev-button class=\"hydrated\" label=\"100\"></tii-aiw-ev-button></button>"
+      },
+      "url": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+      "screenshot": "step-04-click.png",
+      "timestamp": "2025-06-09T22:34:18.988Z",
+      "description": "Usuario hizo clic en elemento de IA: \"<button class=\"ev\" aria-label=\"AI 100%\" data-px=\"AIWIndicatorSuccess\"><tii-aiw-ev-button class=\"hydrated\" label=\"100\"></tii-aiw-ev-button></button>\""
+    },
+    {
+      "step": 5,
+      "action": "download",
+      "elementInfo": {
+        "text": "AI Writing Report"
+      },
+      "url": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+      "screenshot": "step-05-download.png",
+      "timestamp": "2025-06-09T22:35:15.041Z",
+      "description": "Usuario descargó usando botón: \"AI Writing Report\""
+    }
+  ],
+  "finalResult": "success",
+  "notes": "Descarga exitosa del reporte de IA para trabajo: La LECTURA.docx"
+}

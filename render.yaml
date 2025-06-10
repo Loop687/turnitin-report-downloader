@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: turnitin-downloader
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/google-chrome-stable
+      - key: PUPPETEER_ARGS
+        value: "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--no-first-run,--disable-extensions,--disable-gpu"
+      - key: PORT
+        value: 10000

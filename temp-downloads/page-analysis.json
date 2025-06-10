@@ -1,0 +1,230 @@
+{
+  "url": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+  "title": "Assignment Inbox",
+  "linksCount": 138,
+  "buttonsCount": 78,
+  "tablesCount": 2,
+  "tables": [
+    {
+      "headers": [
+        "",
+        "Author",
+        "Title",
+        "Submission ID",
+        "Uploaded",
+        "Viewed\n                    Student Read Status",
+        "Grade",
+        "Similarity",
+        "Flags",
+        "Options"
+      ],
+      "rows": 1
+    },
+    {
+      "headers": [
+        "",
+        "Author",
+        "Title",
+        "Submission ID",
+        "Uploaded",
+        "Viewed\n                    Student Read Status",
+        "Grade",
+        "Similarity",
+        "Flags",
+        "Options"
+      ],
+      "rows": 11
+    }
+  ],
+  "relevantElements": [
+    {
+      "tag": "TITLE",
+      "text": "Assignment Inbox",
+      "classes": "",
+      "id": ""
+    },
+    {
+      "tag": "UL",
+      "text": "Student",
+      "classes": "first-of-type",
+      "id": ""
+    },
+    {
+      "tag": "LI",
+      "text": "Student",
+      "classes": "yuimenuitem first-of-type",
+      "id": "yui-gen21"
+    },
+    {
+      "tag": "A",
+      "text": "Student",
+      "classes": "yuimenuitemlabel",
+      "id": ""
+    },
+    {
+      "tag": "LI",
+      "text": "Edit Assignment",
+      "classes": "first ",
+      "id": ""
+    },
+    {
+      "tag": "A",
+      "text": "Edit Assignment",
+      "classes": "",
+      "id": ""
+    },
+    {
+      "tag": "LI",
+      "text": "Students",
+      "classes": "",
+      "id": ""
+    },
+    {
+      "tag": "A",
+      "text": "Students",
+      "classes": "",
+      "id": ""
+    },
+    {
+      "tag": "DIV",
+      "text": "Paper ID successfully copied to clipboard",
+      "classes": "alert alert-info copy-paper-id-success fade in hide",
+      "id": ""
+    },
+    {
+      "tag": "H1",
+      "text": "Turnitin Assignment Inbox",
+      "classes": "sr-only",
+      "id": ""
+    }
+  ],
+  "sampleLinks": [
+    {
+      "text": "Skip to Main Content",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us#content",
+      "classes": ""
+    },
+    {
+      "text": "Dr. Arfan Zaman",
+      "href": "https://www.turnitin.com/user_info.asp?lang=en_us",
+      "classes": ""
+    },
+    {
+      "text": "User Info",
+      "href": "https://www.turnitin.com/user_info.asp?lang=en_us",
+      "classes": ""
+    },
+    {
+      "text": "Messages",
+      "href": "https://www.turnitin.com/announcements.asp?lang=en_us",
+      "classes": ""
+    },
+    {
+      "text": "Student",
+      "href": "https://www.turnitin.com/user_type.asp?ut=s&lang=en_us",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "English",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "English (International)",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_int&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Čeština",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=cs&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Deutsch",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=de&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Español",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=es&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Français",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=fr&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Italiano",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=it&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Nederlands",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=nl&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Polski",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=pl&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    },
+    {
+      "text": "Português",
+      "href": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=pt_br&set_lang=1",
+      "classes": "yuimenuitemlabel"
+    }
+  ],
+  "sampleButtons": [
+    {
+      "text": "Instructor",
+      "title": "",
+      "classes": ""
+    },
+    {
+      "text": "English",
+      "title": "",
+      "classes": ""
+    },
+    {
+      "text": "×",
+      "title": "",
+      "classes": "close"
+    },
+    {
+      "text": "×",
+      "title": "",
+      "classes": "close"
+    },
+    {
+      "text": "Submit",
+      "title": "",
+      "classes": "btn btn-primary"
+    },
+    {
+      "text": "Now viewing\n            All papers",
+      "title": "",
+      "classes": "btn btn-default dropdown-toggle "
+    },
+    {
+      "text": "Move to",
+      "title": "",
+      "classes": "btn btn-default move-to-button"
+    },
+    {
+      "text": "Download Selected",
+      "title": "",
+      "classes": "btn btn-primary dropdown-toggle download-selected-dropdown"
+    },
+    {
+      "text": "Download All",
+      "title": "",
+      "classes": "btn btn-primary dropdown-toggle download-all-dropdown "
+    },
+    {
+      "text": "Select All Papers",
+      "title": "",
+      "classes": "sr-only"
+    }
+  ]
+}

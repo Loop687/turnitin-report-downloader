@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Reportes Turnitin</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .hidden { 
+            display: none; 
+        }
+        .button { 
+            background: #007bff; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #0056b3; 
+        }
+        .button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .success { 
+            color: green; 
+        }
+        .error { 
+            color: red; 
+        }
+        input, select { 
+            margin: 5px; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        label { 
+            display: block; 
+            margin: 10px 0 5px 0; 
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Portal de Reportes de Turnitin</h1>
+        
+        <!-- Selector de Rol para Pruebas -->
+        <div class="section">
+            <h3>Modo de Prueba</h3>
+            <label for="roleSelector">Selecciona tu rol:</label>
+            <select id="roleSelector">
+                <option value="">-- Selecciona --</option>
+                <option value="student">Estudiante</option>
+                <option value="instructor">Instructor</option>
+            </select>
+        </div>
+
+        <!-- Sección del Estudiante -->
+        <div id="studentSection" class="section hidden">
+            <h2>👨‍🎓 Panel del Estudiante</h2>
+            <p>Como estudiante, puedes solicitar la descarga de tu reporte de IA de Turnitin.</p>
+            
+            <label for="studentSubmissionId">Submission ID (Recomendado - aparece junto al título en la bandeja de entrada, ej: 2696113910):</label>
+            <input type="text" id="studentSubmissionId" name="studentSubmissionId" placeholder="Introduce el Submission ID" style="width: 80%;">
+
+            <label for="studentWorkTitle">O, si no conoces tu Submission ID, título exacto de tu trabajo (ej: Mi Ensayo Final.docx):</label>
+            <input type="text" id="studentWorkTitle" name="studentWorkTitle" placeholder="Solo si no tienes el Submission ID" style="width: 80%;">
+            
+            <button id="requestStudentDownloadButton" class="button">📥 Solicitar y Descargar Reporte</button>
+            <div id="studentStatus" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- Sección del Instructor -->
+        <div id="instructorSection" class="section hidden">
+            <h2>👨‍🏫 Panel del Instructor</h2>
+            <p>Como instructor, puedes subir reportes manualmente.</p>
+            
+            <!-- Comentado temporalmente hasta que puppeteer se instale correctamente
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h4>🤖 Scraper Automático de Turnitin</h4>
+                <p style="margin: 10px 0;">
+                    <strong>Paso 1:</strong> Inicia sesión en Turnitin en otra pestaña<br>
+                    <strong>Paso 2:</strong> Ejecuta el scraper automático para descargar todos los reportes de IA
+                </p>
+                <button id="runScraperBtn" class="button" style="background: #28a745;">
+                    🚀 Ejecutar Scraper Automático
+                </button>
+                <div id="scraperStatus" style="margin-top: 10px;"></div>
+            </div>
+            -->
+
+            <!-- Enlaces útiles existentes -->
+            <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+                <h4>🔗 Enlaces Útiles</h4>
+                <a href="https://www.turnitin.com" target="_blank" class="button" style="background: #1976d2;">
+                    🌐 Abrir Turnitin (Nueva Pestaña)
+                </a>
+                <p style="font-size: 0.9em; margin: 10px 0 0 0;">
+                    💡 <strong>Tip:</strong> Mantén Turnitin abierto en otra pestaña para el scraper automático
+                </p>
+            </div>
+
+            <!-- Subida manual existente -->
+            <form id="uploadForm">
+                <label for="studentId">ID del Estudiante:</label>
+                <input type="text" id="studentId" name="studentId" placeholder="Ej: estudiante123" required>
+                
+                <label for="reportFile">Archivo del Reporte (PDF):</label>
+                <input type="file" id="reportFile" name="reportFile" accept=".pdf" required>
+                
+                <!-- Nuevo: Información adicional del reporte -->
+                <label for="reportTitle">Título del Trabajo (Opcional):</label>
+                <input type="text" id="reportTitle" name="reportTitle" placeholder="Ej: Ensayo sobre...">
+                
+                <button type="submit" class="button">📤 Subir Reporte</button>
+            </form>
+            <div id="instructorStatus" style="margin-top: 10px;"></div>
+            
+            <!-- Nueva sección: Lista de reportes subidos -->
+            <div style="margin-top: 30px;">
+                <h4>📋 Reportes Subidos Recientemente</h4>
+                <div id="uploadedReportsList" style="background: #f5f5f5; padding: 10px; border-radius: 5px;">
+                    <em>Los reportes subidos en esta sesión aparecerán aquí...</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="section">
+            <h3>ℹ️ Información</h3>
+            <div id="environmentInfo" style="padding: 10px; background: #e8f5e8; border-radius: 5px; margin-bottom: 15px;">
+                <strong>🌍 Estado del Servidor:</strong> <span id="serverStatus">Verificando...</span><br>
+                <strong>🔗 URL Actual:</strong> <span id="currentUrl"></span><br>
+                <strong>📊 Versión:</strong> <span id="appVersion">Cargando...</span>
+            </div>
+            
+            <p><strong>ID de Estudiante Simulado:</strong> <code>estudiante123</code></p>
+            <p><strong>Flujo de Prueba:</strong></p>
+            <ol>
+                <li>Introduce tu <strong>Submission ID</strong> (recomendado) en el panel de estudiante</li>
+                <li>O usa el título exacto de tu trabajo</li>
+                <li>Haz clic en "Solicitar y Descargar Reporte"</li>
+                <li>Sigue las instrucciones para hacer login en Turnitin cuando se abra el navegador</li>
+            </ol>
+            
+            <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                <strong>⚠️ Nota Importante:</strong> Esta aplicación funciona como intermediario. 
+                Necesitarás hacer login en Turnitin manualmente cuando se te solicite.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        const roleSelector = document.getElementById('roleSelector');
+        const studentSection = document.getElementById('studentSection');
+        const instructorSection = document.getElementById('instructorSection');
+        // const downloadButton = document.getElementById('downloadMyReportButton'); // Ya no se usa directamente
+        const requestStudentDownloadButton = document.getElementById('requestStudentDownloadButton');
+        const studentWorkTitleInput = document.getElementById('studentWorkTitle');
+        const studentSubmissionIdInput = document.getElementById('studentSubmissionId'); // Nuevo input
+
+        const uploadForm = document.getElementById('uploadForm');
+        const studentStatus = document.getElementById('studentStatus');
+        const instructorStatus = document.getElementById('instructorStatus');
+        
+        // Nuevas variables para scraper
+        const runScraperBtn = document.getElementById('runScraperBtn');
+        const scraperStatus = document.getElementById('scraperStatus');
+
+        // Función para mostrar mensajes
+        function showMessage(element, message, isError = false) {
+            element.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+
+        // Manejo del selector de rol
+        roleSelector.addEventListener('change', function() {
+            const role = this.value;
+            
+            studentSection.classList.add('hidden');
+            instructorSection.classList.add('hidden');
+            
+            if (role === 'student') {
+                studentSection.classList.remove('hidden');
+            } else if (role === 'instructor') {
+                instructorSection.classList.remove('hidden');
+            }
+            
+            studentStatus.innerHTML = '';
+            instructorStatus.innerHTML = '';
+        });
+
+        // Manejo de solicitud de descarga del estudiante
+        if (requestStudentDownloadButton) {
+            requestStudentDownloadButton.addEventListener('click', async function() {
+                const targetWorkTitle = studentWorkTitleInput.value.trim();
+                const submissionId = studentSubmissionIdInput.value.trim();
+
+                // Validación actualizada: priorizar Submission ID
+                if (!submissionId && !targetWorkTitle) {
+                    showMessage(studentStatus, '❌ Por favor, introduce tu Submission ID (recomendado) o el título de tu trabajo.', true);
+                    return;
+                }
+
+                // Determinar el criterio principal
+                let criteriaMessage;
+                if (submissionId) {
+                    criteriaMessage = `Submission ID "${submissionId}"`;
+                    // Si se proporciona Submission ID, limpiar el título para evitar confusión
+                    studentWorkTitleInput.value = '';
+                } else {
+                    criteriaMessage = `título "${targetWorkTitle}"`;
+                }
+
+                showMessage(studentStatus, `⏳ Solicitando descarga para ${criteriaMessage}... El Submission ID es más rápido y preciso. El navegador se mantendrá abierto para futuras descargas.`);
+                requestStudentDownloadButton.disabled = true;
+                requestStudentDownloadButton.textContent = '⏳ Procesando...';
+                
+                try {
+                    const requestBody = submissionId ? 
+                        { submissionId } :  // Solo enviar Submission ID si está presente
+                        { targetWorkTitle }; // Solo enviar título si no hay Submission ID
+
+                    const response = await fetch('/api/student/request-ai-download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (response.ok && response.headers.get('Content-Type')?.includes('application/pdf')) {
+                        // Descarga de archivo
+                        const contentDisposition = response.headers.get('Content-Disposition');
+                        let filename = (submissionId ? `submission_${submissionId}` : targetWorkTitle.replace(/\.[^/.]+$/, "")) + "_AI_Report.pdf";
+                        if (contentDisposition) {
+                            const match = contentDisposition.match(/filename="?(.+)"?/i);
+                            if (match && match[1]) filename = match[1];
+                        }
+                        
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        
+                        showMessage(studentStatus, `✅ Reporte "${filename}" descargado exitosamente. 🔓 El navegador se mantiene abierto para futuras descargas.`);
+                    } else {
+                        // Error o mensaje JSON del backend
+                        const result = await response.json();
+                        throw new Error(result.message || `Error del servidor: ${response.status}`);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error en solicitud de descarga:', error);
+                    showMessage(studentStatus, `❌ Error: ${error.message}`, true);
+                } finally {
+                    requestStudentDownloadButton.disabled = false;
+                    requestStudentDownloadButton.textContent = '📥 Solicitar y Descargar Reporte';
+                }
+            });
+        }
+
+
+        // Manejo de subida del instructor (sin cambios, se mantiene el código anterior
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            showMessage(instructorStatus, '⏳ Subiendo reporte...');
+            
+            try {
+                const response = await fetch('/reports/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'Error al subir el archivo');
+                }
+                
+                showMessage(instructorStatus, `✅ ${result.message}`);
+                this.reset(); // Limpiar el formulario
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage(instructorStatus, `❌ Error: ${error.message}`, true);
+            }
+        });
+
+        // Comentar también el manejo del scraper automático
+        /*
+        if (runScraperBtn) {
+            runScraperBtn.addEventListener('click', async function() {
+                showMessage(scraperStatus, '🤖 Iniciando scraper automático... Esto puede tomar varios minutos.');
+                runScraperBtn.disabled = true;
+                runScraperBtn.textContent = '⏳ Ejecutando...';
+                
+                try {
+                    const response = await fetch('/api/scraper/run', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Error ejecutando scraper');
+                    }
+                    
+                    showMessage(scraperStatus, `✅ ${result.message} - ${result.reportsProcessed} reportes procesados`);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage(scraperStatus, `❌ Error: ${error.message}`, true);
+                } finally {
+                    runScraperBtn.disabled = false;
+                    runScraperBtn.textContent = '🚀 Ejecutar Scraper Automático';
+                }
+            });
+        }
+        */
+
+        // 🔥 NUEVO: Verificar estado del servidor al cargar
+        document.addEventListener('DOMContentLoaded', async function() {
+            const serverStatusEl = document.getElementById('serverStatus');
+            const currentUrlEl = document.getElementById('currentUrl');
+            const appVersionEl = document.getElementById('appVersion');
+            
+            // Mostrar URL actual
+            currentUrlEl.textContent = window.location.origin;
+            
+            try {
+                // Verificar estado del servidor
+                const healthResponse = await fetch('/health');
+                const healthData = await healthResponse.json();
+                
+                if (healthData.status === 'OK') {
+                    serverStatusEl.innerHTML = '<span style="color: green;">✅ Online</span>';
+                } else {
+                    serverStatusEl.innerHTML = '<span style="color: orange;">⚠️ Degradado</span>';
+                }
+                
+                // Obtener información de la app
+                const infoResponse = await fetch('/api/info');
+                const infoData = await infoResponse.json();
+                appVersionEl.textContent = infoData.version;
+                
+            } catch (error) {
+                serverStatusEl.innerHTML = '<span style="color: red;">❌ Error de conexión</span>';
+                appVersionEl.textContent = 'No disponible';
+                console.error('Error verificando estado:', error);
+            }
+        });
+    </script>
+</body>
+</html>

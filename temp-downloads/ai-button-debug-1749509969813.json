@@ -1,0 +1,95 @@
+{
+  "totalButtons": 93,
+  "aiRelatedButtons": [
+    {
+      "index": 53,
+      "tag": "BUTTON",
+      "text": "Submission download unavailable - No paper submitted.\n                                        Download",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Submission download unavailable - No "
+    },
+    {
+      "index": 54,
+      "tag": "BUTTON",
+      "text": "Remove From Inbox unavailable - No paper submitted.\n                                        Remove From Inbox",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Remove From Inbox unavailable - No pa"
+    },
+    {
+      "index": 57,
+      "tag": "BUTTON",
+      "text": "Submission download unavailable - No paper submitted.\n                                        Download",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Submission download unavailable - No "
+    },
+    {
+      "index": 58,
+      "tag": "BUTTON",
+      "text": "Remove From Inbox unavailable - No paper submitted.\n                                        Remove From Inbox",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Remove From Inbox unavailable - No pa"
+    },
+    {
+      "index": 61,
+      "tag": "BUTTON",
+      "text": "Submission download unavailable - No paper submitted.\n                                        Download",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Submission download unavailable - No "
+    },
+    {
+      "index": 62,
+      "tag": "BUTTON",
+      "text": "Remove From Inbox unavailable - No paper submitted.\n                                        Remove From Inbox",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Remove From Inbox unavailable - No pa"
+    },
+    {
+      "index": 65,
+      "tag": "BUTTON",
+      "text": "Submission download unavailable - No paper submitted.\n                                        Download",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Submission download unavailable - No "
+    },
+    {
+      "index": 66,
+      "tag": "BUTTON",
+      "text": "Remove From Inbox unavailable - No paper submitted.\n                                        Remove From Inbox",
+      "ariaLabel": "",
+      "title": "",
+      "className": "btn-link",
+      "id": "",
+      "dataAttributes": {},
+      "innerHTML": "\n                                        <span class=\"sr-only\">Remove From Inbox unavailable - No pa"
+    }
+  ],
+  "tiiComponents": [],
+  "currentUrl": "https://www.turnitin.com/assignment/type/paper/inbox/170792714?lang=en_us"
+}

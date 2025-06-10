@@ -1,0 +1,22 @@
+{
+  "name": "Turnitin AI Report Downloader",
+  "description": "Una aplicación para descargar reportes de IA de Turnitin",
+  "repository": "https://github.com/tu-usuario/turnitin-report-downloader",
+  "keywords": ["node", "express", "turnitin", "puppeteer"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/jontewks/puppeteer-heroku-buildpack"
+    },
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "value": "production"
+    },
+    "PUPPETEER_ARGS": {
+      "value": "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage"
+    }
+  }
+}
