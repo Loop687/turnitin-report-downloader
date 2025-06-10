@@ -1,22 +1,17 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const os_1 = __importDefault(require("os"));
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 async function findDownloadedFiles() {
     console.log('🔍 BUSCADOR DE ARCHIVOS DESCARGADOS');
     console.log('===================================');
     console.log('Busca archivos de reporte de IA en ubicaciones comunes');
     console.log('');
     const searchLocations = [
-        path_1.default.join(os_1.default.homedir(), 'Downloads'),
-        path_1.default.join(os_1.default.homedir(), 'Desktop'),
-        path_1.default.join(os_1.default.homedir(), 'Documents'),
-        path_1.default.join('D:', 'Protus', 'turnitin-report-downloader', 'temp-downloads'),
-        'C:\\Users\\' + os_1.default.userInfo().username + '\\Downloads',
+        path.join(os.homedir(), 'Downloads'),
+        path.join(os.homedir(), 'Desktop'),
+        path.join(os.homedir(), 'Documents'),
+        path.join('D:', 'Protus', 'turnitin-report-downloader', 'temp-downloads'),
+        'C:\\Users\\' + os.userInfo().username + '\\Downloads',
     ];
     const searchPatterns = [
         /turnitin/i,
@@ -34,15 +29,14 @@ async function findDownloadedFiles() {
     console.log('');
     const foundFiles = [];
     searchLocations.forEach(location => {
-        if (fs_1.default.existsSync(location)) {
+        if (fs.existsSync(location)) {
             try {
-                const files = fs_1.default.readdirSync(location);
+                const files = fs.readdirSync(location);
                 files.forEach(file => {
                     const isRelevant = searchPatterns.some(pattern => pattern.test(file));
                     if (isRelevant) {
-                        const filePath = path_1.default.join(location, file);
-                        const stats = fs_1.default.statSync(filePath);
-                        // Solo archivos creados en las últimas 24 horas
+                        const filePath = path.join(location, file);
+                        const stats = fs.statSync(filePath);
                         const ageHours = (Date.now() - stats.birthtime.getTime()) / (1000 * 60 * 60);
                         if (ageHours <= 24) {
                             foundFiles.push({ location, file, stats });

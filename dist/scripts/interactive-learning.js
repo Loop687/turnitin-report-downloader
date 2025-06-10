@@ -1,34 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const turnitin_scraper_service_1 = require("../services/turnitin-scraper.service");
-const interactive_tracker_service_1 = require("../services/interactive-tracker.service");
-const readline = __importStar(require("readline"));
+import { TurnitinScraperService } from '../services/turnitin-scraper.service';
+import { InteractiveTrackerService } from '../services/interactive-tracker.service';
+import * as readline from 'readline';
 async function interactiveLearningSession() {
-    const scraper = new turnitin_scraper_service_1.TurnitinScraperService(true);
-    const tracker = new interactive_tracker_service_1.InteractiveTrackerService();
+    const scraper = new TurnitinScraperService(true);
+    const tracker = new InteractiveTrackerService();
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout

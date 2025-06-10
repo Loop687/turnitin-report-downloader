@@ -1,30 +1,23 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ImprovedTurnitinScraperService = void 0;
-const puppeteer_1 = __importDefault(require("puppeteer"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const report_storage_service_1 = require("./report-storage.service");
-class ImprovedTurnitinScraperService {
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import { ReportStorageService } from './report-storage.service';
+export class ImprovedTurnitinScraperService {
     constructor(debugMode = false) {
         this.browser = null;
-        this.reportStorageService = new report_storage_service_1.ReportStorageService();
-        this.downloadPath = path_1.default.join(__dirname, '..', '..', 'temp-downloads');
+        this.reportStorageService = new ReportStorageService();
+        this.downloadPath = path.join(__dirname, '..', '..', 'temp-downloads');
         this.debugMode = debugMode;
-        if (!fs_1.default.existsSync(this.downloadPath)) {
-            fs_1.default.mkdirSync(this.downloadPath, { recursive: true });
+        if (!fs.existsSync(this.downloadPath)) {
+            fs.mkdirSync(this.downloadPath, { recursive: true });
         }
     }
-    // Agregar método público para acceder al downloadPath
     getDownloadPath() {
         return this.downloadPath;
     }
     async initializeBrowser() {
         console.log('🚀 Iniciando navegador mejorado para scraping...');
-        this.browser = await puppeteer_1.default.launch({
+        this.browser = await puppeteer.launch({
             headless: false,
             defaultViewport: null,
             args: [
@@ -63,10 +56,8 @@ class ImprovedTurnitinScraperService {
     async findAndClickOnSubmission(page, targetTitle) {
         console.log(`🔍 Buscando trabajo: "${targetTitle}"`);
         try {
-            // Configurar listener para nuevas páginas antes de hacer clic
             const browser = page.browser();
             let newPage = null;
-            // Escuchar cuando se abra una nueva página/pestaña
             const pagePromise = new Promise((resolve) => {
                 const onTargetCreated = async (target) => {
                     if (target.type() === 'page') {
@@ -75,7 +66,6 @@ class ImprovedTurnitinScraperService {
                     }
                 };
                 browser.on('targetcreated', onTargetCreated);
-                // Timeout de seguridad
                 setTimeout(() => {
                     browser.off('targetcreated', onTargetCreated);
                     resolve(null);
@@ -83,13 +73,12 @@ class ImprovedTurnitinScraperService {
             });
             console.log(`🔍 Buscando trabajo: "${targetTitle}"`);
             const clickSuccess = await page.evaluate((title) => {
-                var _a;
                 const rows = Array.from(document.querySelectorAll('table tbody tr'));
                 for (const row of rows) {
                     const titleCell = row.querySelector('td:nth-child(3)');
                     if (titleCell) {
                         const titleLink = titleCell.querySelector('a');
-                        if (titleLink && ((_a = titleLink.textContent) === null || _a === void 0 ? void 0 : _a.includes(title))) {
+                        if (titleLink && titleLink.textContent?.includes(title)) {
                             titleLink.click();
                             return true;
                         }
@@ -100,7 +89,6 @@ class ImprovedTurnitinScraperService {
             if (clickSuccess) {
                 console.log(`✅ Clic exitoso en trabajo: "${targetTitle}"`);
                 console.log('⏳ Esperando que se abra nueva ventana...');
-                // Esperar a que se abra la nueva página
                 newPage = await pagePromise;
                 if (newPage) {
                     console.log('🪟 Nueva ventana detectada, cambiando contexto...');
@@ -135,31 +123,25 @@ class ImprovedTurnitinScraperService {
         console.log('🔍 MODO DEBUG: Analizando elementos de IA disponibles...');
         try {
             const debugInfo = await page.evaluate(() => {
-                // Buscar todos los botones
                 const allButtons = Array.from(document.querySelectorAll('button'));
-                // Buscar elementos relacionados con IA
                 const aiRelatedElements = [];
-                // Analizar cada botón
                 allButtons.forEach((button, index) => {
-                    var _a;
                     const buttonInfo = {
                         index: index,
                         tag: button.tagName,
-                        text: ((_a = button.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '',
+                        text: button.textContent?.trim() || '',
                         ariaLabel: button.getAttribute('aria-label') || '',
                         title: button.getAttribute('title') || '',
                         className: button.className || '',
                         id: button.id || '',
                         dataAttributes: {},
-                        innerHTML: button.innerHTML.substring(0, 100) // Primeros 100 caracteres
+                        innerHTML: button.innerHTML.substring(0, 100)
                     };
-                    // Recopilar atributos data-*
                     Array.from(button.attributes).forEach(attr => {
                         if (attr.name.startsWith('data-')) {
                             buttonInfo.dataAttributes[attr.name] = attr.value;
                         }
                     });
-                    // Verificar si podría ser relacionado con IA
                     const isAIRelated = buttonInfo.text.toLowerCase().includes('ai') ||
                         buttonInfo.ariaLabel.toLowerCase().includes('ai') ||
                         buttonInfo.title.toLowerCase().includes('ai') ||
@@ -173,21 +155,17 @@ class ImprovedTurnitinScraperService {
                         aiRelatedElements.push(buttonInfo);
                     }
                 });
-                // Buscar también elementos específicos de Turnitin AI
                 const tiiComponents = Array.from(document.querySelectorAll('tii-aiw-button, tii-aiw-ev-button, tdl-tooltip'));
-                const tiiInfo = tiiComponents.map((comp, index) => {
-                    var _a, _b;
-                    return ({
-                        index: index,
-                        tag: comp.tagName,
-                        label: comp.getAttribute('label') || '',
-                        parent: ((_a = comp.parentElement) === null || _a === void 0 ? void 0 : _a.tagName) || '',
-                        parentClasses: ((_b = comp.parentElement) === null || _b === void 0 ? void 0 : _b.className) || '',
-                        parentAttributes: comp.parentElement ?
-                            Array.from(comp.parentElement.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' ') : '',
-                        innerHTML: comp.innerHTML.substring(0, 150) // Primeros 150 caracteres
-                    });
-                });
+                const tiiInfo = tiiComponents.map((comp, index) => ({
+                    index: index,
+                    tag: comp.tagName,
+                    label: comp.getAttribute('label') || '',
+                    parent: comp.parentElement?.tagName || '',
+                    parentClasses: comp.parentElement?.className || '',
+                    parentAttributes: comp.parentElement ?
+                        Array.from(comp.parentElement.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' ') : '',
+                    innerHTML: comp.innerHTML.substring(0, 150)
+                }));
                 return {
                     totalButtons: allButtons.length,
                     aiRelatedButtons: aiRelatedElements,
@@ -223,9 +201,8 @@ class ImprovedTurnitinScraperService {
                     console.log('');
                 });
             }
-            // Guardar información de debug
-            const debugFile = path_1.default.join(this.downloadPath, `ai-button-debug-${Date.now()}.json`);
-            fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+            const debugFile = path.join(this.downloadPath, `ai-button-debug-${Date.now()}.json`);
+            fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
             console.log(`💾 Información de debug guardada en: ${debugFile}`);
         }
         catch (error) {
@@ -239,25 +216,22 @@ class ImprovedTurnitinScraperService {
                 const allButtons = Array.from(document.querySelectorAll('button'));
                 const aiRelatedElements = [];
                 allButtons.forEach((button, index) => {
-                    var _a;
                     const buttonInfo = {
                         index: index,
                         tag: button.tagName,
-                        text: ((_a = button.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '',
+                        text: button.textContent?.trim() || '',
                         ariaLabel: button.getAttribute('aria-label') || '',
                         title: button.getAttribute('title') || '',
                         className: button.className || '',
                         id: button.id || '',
                         dataAttributes: {},
-                        innerHTML: button.innerHTML.substring(0, 100) // Primeros 100 caracteres
+                        innerHTML: button.innerHTML.substring(0, 100)
                     };
-                    // Recopilar atributos data-*
                     Array.from(button.attributes).forEach(attr => {
                         if (attr.name.startsWith('data-')) {
                             buttonInfo.dataAttributes[attr.name] = attr.value;
                         }
                     });
-                    // Verificar si podría ser relacionado con IA
                     const isAIRelated = buttonInfo.text.toLowerCase().includes('ai') ||
                         buttonInfo.ariaLabel.toLowerCase().includes('ai') ||
                         buttonInfo.title.toLowerCase().includes('ai') ||
@@ -271,21 +245,17 @@ class ImprovedTurnitinScraperService {
                         aiRelatedElements.push(buttonInfo);
                     }
                 });
-                // Buscar también elementos específicos de Turnitin AI
                 const tiiComponents = Array.from(document.querySelectorAll('tii-aiw-button, tii-aiw-ev-button, tdl-tooltip'));
-                const tiiInfo = tiiComponents.map((comp, index) => {
-                    var _a, _b;
-                    return ({
-                        index: index,
-                        tag: comp.tagName,
-                        label: comp.getAttribute('label') || '',
-                        parent: ((_a = comp.parentElement) === null || _a === void 0 ? void 0 : _a.tagName) || '',
-                        parentClasses: ((_b = comp.parentElement) === null || _b === void 0 ? void 0 : _b.className) || '',
-                        parentAttributes: comp.parentElement ?
-                            Array.from(comp.parentElement.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' ') : '',
-                        innerHTML: comp.innerHTML.substring(0, 150) // Primeros 150 caracteres
-                    });
-                });
+                const tiiInfo = tiiComponents.map((comp, index) => ({
+                    index: index,
+                    tag: comp.tagName,
+                    label: comp.getAttribute('label') || '',
+                    parent: comp.parentElement?.tagName || '',
+                    parentClasses: comp.parentElement?.className || '',
+                    parentAttributes: comp.parentElement ?
+                        Array.from(comp.parentElement.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' ') : '',
+                    innerHTML: comp.innerHTML.substring(0, 150)
+                }));
                 return {
                     totalButtons: allButtons.length,
                     aiRelatedButtons: aiRelatedElements,
@@ -321,9 +291,8 @@ class ImprovedTurnitinScraperService {
                     console.log('');
                 });
             }
-            // Guardar información de debug
-            const debugFile = path_1.default.join(this.downloadPath, `ai-button-debug-carta-${Date.now()}.json`);
-            fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+            const debugFile = path.join(this.downloadPath, `ai-button-debug-carta-${Date.now()}.json`);
+            fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
             console.log(`💾 Información de debug guardada en: ${debugFile}`);
         }
         catch (error) {
@@ -333,32 +302,24 @@ class ImprovedTurnitinScraperService {
     async findAndClickOnSubmissionById(page, submissionId) {
         console.log(`   🕵️‍♂️ Intentando encontrar Submission ID: "${submissionId}" en la página.`);
         try {
-            await page.waitForTimeout(3000); // Espera para carga dinámica
-            // 🔥 ESTRATEGIA MEJORADA BASADA EN EL HTML REAL
+            await page.waitForTimeout(3000);
             console.log(`   🔍 Estrategia específica para la estructura de Turnitin...`);
-            // Basándome en el HTML, el Submission ID aparece como "Paper ID: 2696113910"
             const clickResult = await page.evaluate((targetId) => {
-                var _a;
-                // Buscar el texto "Paper ID:" seguido del submission ID
                 const allElements = Array.from(document.querySelectorAll('*'));
                 let submissionFound = false;
                 let paperTitleLink = null;
                 for (let element of allElements) {
                     const textContent = element.textContent || '';
-                    // Buscar "Paper ID:" seguido del submission ID
                     if (textContent.includes('Paper ID:') && textContent.includes(targetId)) {
                         console.log('Submission ID encontrado en:', textContent);
                         submissionFound = true;
-                        // Buscar el enlace del título del paper en la misma fila o contenedor
                         let container = element.closest('tr') || element.closest('tbody') || element.closest('div');
                         if (container) {
-                            // Buscar enlaces que contengan "Paper Title:" o "Open paper in Feedback Studio"
                             const links = Array.from(container.querySelectorAll('a'));
                             for (let link of links) {
                                 const linkText = link.textContent || '';
                                 const linkTitle = link.title || '';
                                 const linkHref = link.href || '';
-                                // Buscar enlaces que abran en Feedback Studio (Carta)
                                 if (linkText.includes('Paper Title:') ||
                                     linkText.includes('Open paper in Feedback Studio') ||
                                     linkTitle.includes('Open paper in Feedback Studio') ||
@@ -377,14 +338,14 @@ class ImprovedTurnitinScraperService {
                         return {
                             success: true,
                             reason: `Clic realizado en enlace del paper para Submission ID "${targetId}"`,
-                            linkText: (_a = paperTitleLink.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
+                            linkText: paperTitleLink.textContent?.trim(),
                             linkHref: paperTitleLink.href
                         };
                     }
                     catch (clickError) {
                         return {
                             success: false,
-                            reason: `Error al hacer clic: ${(clickError === null || clickError === void 0 ? void 0 : clickError.message) || 'Error desconocido'}`,
+                            reason: `Error al hacer clic: ${clickError?.message || 'Error desconocido'}`,
                             found: true
                         };
                     }
@@ -407,21 +368,18 @@ class ImprovedTurnitinScraperService {
             if (clickResult.success) {
                 console.log(`   ✅ ${clickResult.reason}`);
                 console.log(`   📎 Enlace: ${clickResult.linkHref}`);
-                await page.waitForTimeout(2000); // Esperar navegación
+                await page.waitForTimeout(2000);
                 return true;
             }
             else {
                 console.log(`   ❌ ${clickResult.reason}`);
                 if (clickResult.found) {
-                    // El ID fue encontrado pero no se pudo hacer clic, intentar estrategia alternativa
                     console.log(`   🔄 Intentando estrategia alternativa con selectors CSS...`);
                     const alternativeResult = await page.evaluate((targetId) => {
-                        // Buscar usando selectores más específicos
                         const tables = Array.from(document.querySelectorAll('table tbody tr'));
                         for (let row of tables) {
                             const rowText = row.textContent || '';
                             if (rowText.includes(targetId)) {
-                                // Buscar enlaces en esta fila
                                 const links = Array.from(row.querySelectorAll('a[href*="carta"], a[title*="Feedback Studio"]'));
                                 if (links.length > 0) {
                                     try {
@@ -436,7 +394,7 @@ class ImprovedTurnitinScraperService {
                                     catch (e) {
                                         return {
                                             success: false,
-                                            reason: `Error en clic alternativo: ${(e === null || e === void 0 ? void 0 : e.message) || 'Error desconocido'}`
+                                            reason: `Error en clic alternativo: ${e?.message || 'Error desconocido'}`
                                         };
                                     }
                                 }
@@ -457,21 +415,19 @@ class ImprovedTurnitinScraperService {
                     }
                 }
             }
-            // 🔥 DEBUG: Mostrar todos los Submission IDs disponibles
             const availableIds = await page.evaluate(() => {
                 const allElements = Array.from(document.querySelectorAll('*'));
                 const foundIds = [];
                 for (let element of allElements) {
                     const textContent = element.textContent || '';
                     if (textContent.includes('Paper ID:')) {
-                        // Extraer el ID usando regex
                         const match = textContent.match(/Paper ID:\s*(\d+)/);
                         if (match && match[1]) {
                             foundIds.push(match[1]);
                         }
                     }
                 }
-                return [...new Set(foundIds)]; // Eliminar duplicados
+                return [...new Set(foundIds)];
             });
             console.log(`   📋 Submission IDs disponibles en la página: ${availableIds.join(', ')}`);
             if (availableIds.length > 0 && !availableIds.includes(submissionId)) {
@@ -492,4 +448,3 @@ class ImprovedTurnitinScraperService {
         }
     }
 }
-exports.ImprovedTurnitinScraperService = ImprovedTurnitinScraperService;

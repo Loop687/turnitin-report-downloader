@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function turnitinWebComponentsFinder() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -48,7 +20,6 @@ async function turnitinWebComponentsFinder() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Proceso completo hasta llegar a la página de IA
         await navigateToAIReportPage(scraper, page);
         if (!page.url().includes('integrity.turnitin.com')) {
             console.log('❌ No se pudo llegar a la página del reporte de IA');
@@ -56,7 +27,6 @@ async function turnitinWebComponentsFinder() {
         }
         console.log('✅ En la página del reporte de IA');
         console.log(`📍 URL: ${page.url()}`);
-        // Búsqueda específica en Web Components
         await searchTurnitinWebComponents(page, scraper.getDownloadPath());
     }
     catch (error) {
@@ -104,7 +74,6 @@ async function navigateToAIReportPage(scraper, page) {
             }
         }
         await workingPage.waitForTimeout(5000);
-        // Usar información exacta del debug
         const debugInfo = {
             cssSelector: "tii-aiw-button.hydrated",
             expectedAttributes: {
@@ -169,14 +138,11 @@ async function searchTurnitinWebComponents(page, downloadPath) {
     try {
         console.log('\n🔧 BÚSQUEDA EN WEB COMPONENTS DE TURNITIN');
         console.log('==========================================');
-        // Tomar screenshot
-        const screenshotPath = path_1.default.join(downloadPath, `turnitin_web_components_${Date.now()}.png`);
+        const screenshotPath = path.join(downloadPath, `turnitin_web_components_${Date.now()}.png`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`📸 Screenshot: ${screenshotPath}`);
-        // XPath específico que proporcionaste
         const specificXPath = '/body/tii-ai-writing-app//tii-router//aiwa-home//tii-sws-submission-workspace/tii-sws-header/tii-sws-download-btn-mfe';
         console.log(`🎯 XPath específico proporcionado: ${specificXPath}`);
-        // Búsqueda completa de Web Components
         const webComponentAnalysis = await page.evaluate(() => {
             const results = {
                 turnitinWebComponents: [],
@@ -184,7 +150,6 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                 allCustomElements: [],
                 shadowDomElements: []
             };
-            // 1. Buscar todos los Web Components de Turnitin
             const turnitinSelectors = [
                 'tii-ai-writing-app',
                 'tii-router',
@@ -199,7 +164,6 @@ async function searchTurnitinWebComponents(page, downloadPath) {
             turnitinSelectors.forEach(selector => {
                 const elements = Array.from(document.querySelectorAll(selector));
                 elements.forEach((el, index) => {
-                    var _a;
                     results.turnitinWebComponents.push({
                         selector: selector,
                         index: index,
@@ -209,13 +173,12 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                         attributes: Array.from(el.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' '),
                         hasChildren: el.children.length > 0,
                         childrenCount: el.children.length,
-                        textContent: ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 100)) || '[Sin texto]',
+                        textContent: el.textContent?.trim().substring(0, 100) || '[Sin texto]',
                         hasShadowRoot: !!el.shadowRoot,
                         outerHTML: el.outerHTML.substring(0, 300) + '...'
                     });
                 });
             });
-            // 2. Buscar elementos relacionados con descarga
             const downloadSelectors = [
                 '*[class*="download"]',
                 '*[id*="download"]',
@@ -226,55 +189,48 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                 try {
                     const elements = Array.from(document.querySelectorAll(selector));
                     elements.forEach(el => {
-                        var _a;
                         results.downloadRelatedElements.push({
                             selector: selector,
                             tagName: el.tagName,
                             id: el.id,
                             className: el.className,
-                            textContent: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 50)
+                            textContent: el.textContent?.trim().substring(0, 50)
                         });
                     });
                 }
                 catch (error) {
-                    // Algunos selectores pueden fallar
                 }
             });
-            // 3. Buscar todos los custom elements
             const allElements = Array.from(document.querySelectorAll('*'));
             allElements.forEach(el => {
-                var _a;
-                if (el.tagName.includes('-')) { // Custom elements tienen guión
+                if (el.tagName.includes('-')) {
                     results.allCustomElements.push({
                         tagName: el.tagName,
                         id: el.id || '[Sin ID]',
                         className: el.className || '[Sin clases]',
-                        textContent: ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 50)) || '[Sin texto]'
+                        textContent: el.textContent?.trim().substring(0, 50) || '[Sin texto]'
                     });
                 }
             });
-            // 4. Intentar acceder a Shadow DOM
             const elementsWithShadow = Array.from(document.querySelectorAll('*')).filter(el => el.shadowRoot);
             elementsWithShadow.forEach(el => {
                 const shadowRoot = el.shadowRoot;
                 if (shadowRoot) {
                     const shadowElements = Array.from(shadowRoot.querySelectorAll('*'));
                     shadowElements.forEach(shadowEl => {
-                        var _a;
                         const shadowElement = shadowEl;
                         results.shadowDomElements.push({
                             parentTag: el.tagName,
                             tagName: shadowElement.tagName,
                             id: shadowElement.id || '[Sin ID]',
                             className: shadowElement.className || '[Sin clases]',
-                            textContent: ((_a = shadowElement.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 50)) || '[Sin texto]'
+                            textContent: shadowElement.textContent?.trim().substring(0, 50) || '[Sin texto]'
                         });
                     });
                 }
             });
             return results;
         });
-        // Mostrar resultados
         console.log('\n📊 RESULTADOS DEL ANÁLISIS:');
         console.log('============================');
         console.log(`🔧 Web Components de Turnitin: ${webComponentAnalysis.turnitinWebComponents.length}`);
@@ -304,7 +260,6 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                 console.log(`   📝 Texto: "${el.textContent}"`);
             });
         }
-        // Probar el XPath específico
         console.log('\n🎯 PROBANDO XPATH ESPECÍFICO:');
         console.log('==============================');
         try {
@@ -315,28 +270,28 @@ async function searchTurnitinWebComponents(page, downloadPath) {
                 const shouldClick = await askQuestion('¿Hacer clic en el elemento encontrado con XPath específico? (s/n): ');
                 if (shouldClick.toLowerCase() === 's') {
                     console.log('🖱️ Haciendo clic...');
-                    const filesBefore = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                    const filesBefore = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                     await specificElements[0].click();
                     console.log('✅ Clic realizado');
                     console.log('⏳ Esperando descarga (15 segundos)...');
                     await page.waitForTimeout(15000);
-                    const filesAfter = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                    const filesAfter = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                     const newFiles = filesAfter.filter(f => !filesBefore.includes(f));
                     if (newFiles.length > 0) {
                         console.log('🎉 ¡DESCARGA EXITOSA!');
                         newFiles.forEach((file, index) => {
-                            const filePath = path_1.default.join(downloadPath, file);
-                            const stats = fs_1.default.statSync(filePath);
+                            const filePath = path.join(downloadPath, file);
+                            const stats = fs.statSync(filePath);
                             console.log(`   📄 ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                         });
                         const pdfFile = newFiles.find(f => f.endsWith('.pdf'));
                         if (pdfFile) {
                             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                             const newName = `AI_Report_LA_LECTURA_${timestamp}.pdf`;
-                            const oldPath = path_1.default.join(downloadPath, pdfFile);
-                            const newPath = path_1.default.join(downloadPath, newName);
+                            const oldPath = path.join(downloadPath, pdfFile);
+                            const newPath = path.join(downloadPath, newName);
                             try {
-                                fs_1.default.renameSync(oldPath, newPath);
+                                fs.renameSync(oldPath, newPath);
                                 console.log(`📝 Archivo renombrado: ${newName}`);
                             }
                             catch (error) {
@@ -353,7 +308,6 @@ async function searchTurnitinWebComponents(page, downloadPath) {
             }
             else {
                 console.log('❌ XPath específico no encontró elementos');
-                // Intentar variaciones del XPath
                 console.log('\n🔄 Probando variaciones del XPath...');
                 const xpathVariations = [
                     '//tii-ai-writing-app//tii-router//aiwa-home//tii-sws-submission-workspace//tii-sws-header//tii-sws-download-btn-mfe',
@@ -387,9 +341,8 @@ async function searchTurnitinWebComponents(page, downloadPath) {
         catch (error) {
             console.log(`❌ Error probando XPath específico: ${error}`);
         }
-        // Guardar análisis completo
-        const analysisFile = path_1.default.join(downloadPath, `turnitin_web_components_analysis_${Date.now()}.json`);
-        fs_1.default.writeFileSync(analysisFile, JSON.stringify(webComponentAnalysis, null, 2));
+        const analysisFile = path.join(downloadPath, `turnitin_web_components_analysis_${Date.now()}.json`);
+        fs.writeFileSync(analysisFile, JSON.stringify(webComponentAnalysis, null, 2));
         console.log(`\n💾 Análisis completo guardado en: ${analysisFile}`);
     }
     catch (error) {

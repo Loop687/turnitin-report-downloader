@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function interactiveAIPage() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -48,7 +20,6 @@ async function interactiveAIPage() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Navegar hasta la página del reporte de IA
         await navigateToAIReportPage(scraper, page);
         if (!page.url().includes('integrity.turnitin.com')) {
             console.log('❌ No se pudo llegar a la página del reporte de IA');
@@ -56,14 +27,12 @@ async function interactiveAIPage() {
         }
         console.log('✅ En la página del reporte de IA');
         console.log(`📍 URL: ${page.url()}`);
-        // Bucle interactivo
         let continueInteracting = true;
         while (continueInteracting) {
             await performInteractiveAnalysis(page, scraper.getDownloadPath());
             const continueResponse = await askQuestion('\n¿Quieres realizar otra acción? (s/n): ');
             continueInteracting = continueResponse.toLowerCase() === 's';
             if (continueInteracting) {
-                // Pequeña pausa antes del siguiente análisis
                 await page.waitForTimeout(2000);
             }
         }
@@ -88,7 +57,6 @@ async function navigateToAIReportPage(scraper, page) {
             rl.question(question, resolve);
         });
     };
-    // Navegar a Turnitin
     await scraper.navigateToTurnitinInbox(page);
     const currentUrl = page.url();
     if (currentUrl.includes('login')) {
@@ -96,15 +64,12 @@ async function navigateToAIReportPage(scraper, page) {
         await askQuestion('');
         await scraper.navigateToTurnitinInbox(page);
     }
-    // Seleccionar trabajo
     const workTitle = await askQuestion('¿Cuál es el título del trabajo? (ej: "LA LECTURA.docx"): ');
     console.log(`\n🎯 Procesando: "${workTitle}"`);
-    // Abrir trabajo
     const clickSuccess = await scraper.findAndClickOnSubmission(page, workTitle);
     if (!clickSuccess) {
         throw new Error('No se pudo abrir el trabajo');
     }
-    // Encontrar página correcta
     const browser = page.browser();
     const pages = await browser.pages();
     let workingPage = page;
@@ -117,7 +82,6 @@ async function navigateToAIReportPage(scraper, page) {
     }
     console.log(`📍 Página de trabajo: ${workingPage.url()}`);
     await workingPage.waitForTimeout(3000);
-    // Hacer clic en IA
     console.log('🤖 Haciendo clic en botón de IA...');
     const aiXPath = '//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button';
     let aiReportPage = null;
@@ -142,10 +106,8 @@ async function navigateToAIReportPage(scraper, page) {
         if (aiReportPage && aiReportPage.url().includes('integrity.turnitin.com')) {
             console.log('✅ Página del reporte de IA detectada');
             console.log(`📍 URL: ${aiReportPage.url()}`);
-            // Esperar a que cargue
             console.log('⏳ Esperando que la página cargue completamente (10 segundos)...');
             await aiReportPage.waitForTimeout(10000);
-            // Actualizar la referencia de página
             Object.assign(page, aiReportPage);
         }
         else {
@@ -169,14 +131,12 @@ async function performInteractiveAnalysis(page, downloadPath) {
     };
     try {
         console.log('\n🔍 ANALIZANDO ELEMENTOS ACTUALES...');
-        // Tomar screenshot actualizado
-        const screenshotPath = path_1.default.join(downloadPath, `ai_page_interactive_${Date.now()}.png`);
+        const screenshotPath = path.join(downloadPath, `ai_page_interactive_${Date.now()}.png`);
         await page.screenshot({
             path: screenshotPath,
             fullPage: true
         });
         console.log(`📸 Screenshot actualizado: ${screenshotPath}`);
-        // Análisis en tiempo real
         const elements = await page.evaluate(() => {
             const allElements = [];
             const selectors = ['button', 'a', '[role="button"]', '[onclick]', 'input[type="button"]', 'input[type="submit"]', 'div[onclick]', '*[class*="button"]', '*[class*="download"]'];
@@ -184,14 +144,12 @@ async function performInteractiveAnalysis(page, downloadPath) {
                 try {
                     const foundElements = Array.from(document.querySelectorAll(selector));
                     foundElements.forEach((el, index) => {
-                        var _a;
                         const computedStyle = window.getComputedStyle(el);
                         const isVisible = computedStyle.display !== 'none' &&
                             computedStyle.visibility !== 'hidden' &&
                             el.offsetWidth > 0 &&
                             el.offsetHeight > 0;
                         if (isVisible) {
-                            // Generar XPath simple
                             const getSimpleXPath = (element) => {
                                 if (element.id) {
                                     return `//*[@id="${element.id}"]`;
@@ -214,7 +172,6 @@ async function performInteractiveAnalysis(page, downloadPath) {
                                     }
                                     parts.unshift(tagName);
                                     currentEl = currentEl.parentElement;
-                                    // Limitar profundidad para XPaths más manejables
                                     if (parts.length > 8)
                                         break;
                                 }
@@ -223,7 +180,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
                             allElements.push({
                                 index: allElements.length + 1,
                                 tag: el.tagName,
-                                text: ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '[Sin texto]',
+                                text: el.textContent?.trim() || '[Sin texto]',
                                 className: el.className || '[Sin clases]',
                                 id: el.id || '[Sin ID]',
                                 xpath: getSimpleXPath(el),
@@ -250,22 +207,17 @@ async function performInteractiveAnalysis(page, downloadPath) {
         console.log('================================================');
         if (elements.length === 0) {
             console.log('❌ No se encontraron elementos clickeables');
-            // Mostrar contenido de la página como ayuda
-            const pageContent = await page.evaluate(() => {
-                var _a;
-                return ({
-                    title: document.title,
-                    bodyText: (_a = document.body.textContent) === null || _a === void 0 ? void 0 : _a.substring(0, 300),
-                    htmlPreview: document.body.innerHTML.substring(0, 500)
-                });
-            });
+            const pageContent = await page.evaluate(() => ({
+                title: document.title,
+                bodyText: document.body.textContent?.substring(0, 300),
+                htmlPreview: document.body.innerHTML.substring(0, 500)
+            }));
             console.log('\n📝 CONTENIDO DE LA PÁGINA:');
             console.log(`Título: ${pageContent.title}`);
             console.log(`Texto: ${pageContent.bodyText}...`);
             console.log(`HTML: ${pageContent.htmlPreview}...`);
         }
         else {
-            // Mostrar elementos encontrados
             elements.forEach((el, index) => {
                 console.log(`\n${el.index}. <${el.tag}>:`);
                 console.log(`   📝 Texto: "${el.text.substring(0, 60)}${el.text.length > 60 ? '...' : ''}"`);
@@ -293,7 +245,7 @@ async function performInteractiveAnalysis(page, downloadPath) {
                 return;
             }
             else if (choice.toLowerCase() === 's') {
-                const newScreenshot = path_1.default.join(downloadPath, `ai_page_manual_${Date.now()}.png`);
+                const newScreenshot = path.join(downloadPath, `ai_page_manual_${Date.now()}.png`);
                 await page.screenshot({ path: newScreenshot, fullPage: true });
                 console.log(`📸 Nuevo screenshot: ${newScreenshot}`);
                 rl.close();
@@ -317,27 +269,22 @@ async function performInteractiveAnalysis(page, downloadPath) {
                 console.log(`\n🖱️ Haciendo clic en elemento ${elementIndex + 1}: <${selectedElement.tag}>`);
                 console.log(`   📝 Texto: "${selectedElement.text}"`);
                 console.log(`   🎯 XPath: ${selectedElement.xpath}`);
-                // Obtener lista de archivos antes del clic
-                const filesBefore = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                const filesBefore = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                 try {
-                    // Intentar clic con XPath
                     const xpathElements = await page.$x(selectedElement.xpath);
                     if (xpathElements.length > 0) {
                         await xpathElements[0].click();
                         console.log('✅ Clic realizado con XPath');
                     }
                     else {
-                        // Fallback a CSS selector
                         await page.click(selectedElement.cssSelector);
                         console.log('✅ Clic realizado con CSS selector');
                     }
                     console.log('⏳ Esperando respuesta (8 segundos)...');
                     await page.waitForTimeout(8000);
-                    // Verificar cambios
                     const newUrl = page.url();
                     console.log(`📍 URL después del clic: ${newUrl}`);
-                    // Verificar archivos descargados
-                    const filesAfter = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                    const filesAfter = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                     const newFiles = filesAfter.filter(f => !filesBefore.includes(f));
                     if (newFiles.length > 0) {
                         console.log('🎉 ¡DESCARGA DETECTADA!');
@@ -348,15 +295,11 @@ async function performInteractiveAnalysis(page, downloadPath) {
                     else {
                         console.log('ℹ️ No se detectaron descargas nuevas');
                     }
-                    // Verificar cambios en la página
-                    const pageChanges = await page.evaluate(() => {
-                        var _a;
-                        return ({
-                            newTitle: document.title,
-                            hasNewElements: document.querySelectorAll('button, a').length,
-                            bodyTextPreview: (_a = document.body.textContent) === null || _a === void 0 ? void 0 : _a.substring(0, 200)
-                        });
-                    });
+                    const pageChanges = await page.evaluate(() => ({
+                        newTitle: document.title,
+                        hasNewElements: document.querySelectorAll('button, a').length,
+                        bodyTextPreview: document.body.textContent?.substring(0, 200)
+                    }));
                     console.log('\n📋 Estado de la página:');
                     console.log(`   📄 Título: ${pageChanges.newTitle}`);
                     console.log(`   🔘 Elementos clickeables: ${pageChanges.hasNewElements}`);

@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function learnDownloadActions() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -49,7 +21,6 @@ async function learnDownloadActions() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Crear sesión de aprendizaje
         const session = {
             sessionId: `learn_${Date.now()}`,
             workTitle: "LA LECTURA.docx",
@@ -59,10 +30,8 @@ async function learnDownloadActions() {
             downloadedFiles: [],
             success: false
         };
-        // Navegación automática hasta la página final
         console.log('🚀 Navegando automáticamente hasta la página del reporte de IA...');
         await navigateToFinalAIPage(scraper, page, session);
-        // Verificar que llegamos a la página correcta
         const currentUrl = page.url();
         console.log(`📍 URL final alcanzada: ${currentUrl}`);
         if (!currentUrl.includes('integrity.turnitin.com')) {
@@ -73,11 +42,9 @@ async function learnDownloadActions() {
         }
         session.finalUrl = currentUrl;
         console.log(`✅ ¡ÉXITO! Llegamos a la página del reporte de IA: ${session.finalUrl}`);
-        // INICIO DEL MODO APRENDIZAJE
         await startLearningMode(page, scraper.getDownloadPath(), session);
-        // Guardar sesión de aprendizaje
-        const sessionFile = path_1.default.join(scraper.getDownloadPath(), `download_learning_session_${session.sessionId}.json`);
-        fs_1.default.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+        const sessionFile = path.join(scraper.getDownloadPath(), `download_learning_session_${session.sessionId}.json`);
+        fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
         console.log(`💾 Sesión de aprendizaje guardada: ${sessionFile}`);
     }
     catch (error) {
@@ -101,7 +68,6 @@ async function navigateToFinalAIPage(scraper, page, session) {
         });
     };
     try {
-        // Usar información exacta del archivo JSON que proporcionaste
         const debugInfo = {
             workTitle: "LA LECTURA.docx",
             aiButtonXPath: "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
@@ -162,10 +128,8 @@ async function navigateToFinalAIPage(scraper, page, session) {
                 console.log(`📍 URL del reporte: ${aiUrl}`);
                 if (aiUrl.includes('integrity.turnitin.com')) {
                     console.log('✅ Nueva pestaña del reporte de IA confirmada');
-                    // Actualizar la referencia de página para que el script principal use la nueva pestaña
                     Object.setPrototypeOf(page, Object.getPrototypeOf(aiReportPage));
                     Object.assign(page, aiReportPage);
-                    // Verificar que la página esté completamente cargada
                     console.log('⏳ Esperando que la página del reporte cargue completamente...');
                     await page.waitForTimeout(8000);
                     console.log('✅ Página del reporte de IA lista para el modo aprendizaje');
@@ -212,28 +176,23 @@ async function startLearningMode(page, downloadPath, session) {
         console.log('   ✅ Scrolls en la página');
         console.log('   ✅ Esperas/pausas');
         console.log('');
-        // Tomar screenshot inicial
-        const initialScreenshot = path_1.default.join(downloadPath, `learning_initial_${session.sessionId}.png`);
+        const initialScreenshot = path.join(downloadPath, `learning_initial_${session.sessionId}.png`);
         await page.screenshot({ path: initialScreenshot, fullPage: true });
         console.log(`📸 Screenshot inicial: ${initialScreenshot}`);
-        // Configurar listeners para capturar acciones del usuario
         await setupActionListeners(page, session);
-        // Configurar monitoreo de archivos descargados
-        const initialFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+        const initialFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
         console.log('🔴 GRABACIÓN INICIADA - Realiza tus acciones en el navegador...');
         console.log('');
-        // Esperar a que el usuario termine
         await askQuestion('⏸️ Presiona ENTER cuando hayas completado la descarga: ');
         console.log('🔴 GRABACIÓN DETENIDA');
-        // Verificar archivos descargados
-        const finalFiles = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+        const finalFiles = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
         const newFiles = finalFiles.filter(f => !initialFiles.includes(f));
         session.downloadedFiles = newFiles;
         if (newFiles.length > 0) {
             console.log('✅ Archivos descargados detectados:');
             newFiles.forEach((file, index) => {
-                const filePath = path_1.default.join(downloadPath, file);
-                const stats = fs_1.default.statSync(filePath);
+                const filePath = path.join(downloadPath, file);
+                const stats = fs.statSync(filePath);
                 console.log(`   ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
             });
             session.success = true;
@@ -242,12 +201,10 @@ async function startLearningMode(page, downloadPath, session) {
             console.log('⚠️ No se detectaron archivos descargados nuevos');
             session.success = false;
         }
-        // Tomar screenshot final
-        const finalScreenshot = path_1.default.join(downloadPath, `learning_final_${session.sessionId}.png`);
+        const finalScreenshot = path.join(downloadPath, `learning_final_${session.sessionId}.png`);
         await page.screenshot({ path: finalScreenshot, fullPage: true });
         console.log(`📸 Screenshot final: ${finalScreenshot}`);
         session.endTime = Date.now();
-        // Mostrar resumen de acciones grabadas
         console.log('\n📋 RESUMEN DE ACCIONES GRABADAS:');
         console.log('================================');
         console.log(`⏱️ Duración: ${((session.endTime - session.startTime) / 1000).toFixed(2)} segundos`);
@@ -268,7 +225,6 @@ async function startLearningMode(page, downloadPath, session) {
         if (session.success) {
             console.log('\n🎉 ¡APRENDIZAJE COMPLETADO EXITOSAMENTE!');
             console.log('📝 Ahora se puede crear un script automático con estas acciones.');
-            // Crear script automático
             await generateAutomaticScript(session, downloadPath);
         }
         else {
@@ -284,7 +240,6 @@ async function startLearningMode(page, downloadPath, session) {
     }
 }
 async function setupActionListeners(page, session) {
-    // Función para generar XPath de un elemento
     await page.evaluateOnNewDocument(() => {
         function generateXPath(element) {
             if (element.id) {
@@ -309,17 +264,14 @@ async function setupActionListeners(page, session) {
                 parts.unshift(tagName);
                 current = current.parentElement;
                 if (parts.length > 8)
-                    break; // Limitar profundidad
+                    break;
             }
             return '//' + parts.join('/');
         }
-        // Hacer la función disponible globalmente
         window.generateXPath = generateXPath;
     });
-    // Listener para clics
     await page.evaluateOnNewDocument(() => {
         document.addEventListener('click', (event) => {
-            var _a, _b;
             const target = event.target;
             if (target) {
                 const actionData = {
@@ -329,7 +281,7 @@ async function setupActionListeners(page, session) {
                         tagName: target.tagName,
                         className: target.className || '',
                         id: target.id || '',
-                        text: ((_b = (_a = target.textContent) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.substring(0, 100)) || '',
+                        text: target.textContent?.trim()?.substring(0, 100) || '',
                         xpath: window.generateXPath(target),
                         cssSelector: target.id ? `#${target.id}` :
                             target.className ? `${target.tagName.toLowerCase()}.${target.className.split(' ').join('.')}` :
@@ -340,37 +292,30 @@ async function setupActionListeners(page, session) {
                         }
                     }
                 };
-                // Enviar datos al contexto de Node.js
                 window.capturedActions = window.capturedActions || [];
                 window.capturedActions.push(actionData);
             }
         }, true);
     });
-    // Monitorear acciones cada segundo
     const actionMonitor = setInterval(async () => {
         try {
             const capturedActions = await page.evaluate(() => {
                 const actions = window.capturedActions || [];
-                window.capturedActions = []; // Limpiar después de obtener
+                window.capturedActions = [];
                 return actions;
             });
-            // Agregar acciones capturadas a la sesión
             capturedActions.forEach((action) => {
-                var _a, _b, _c;
                 session.userActions.push(action);
-                // Log en tiempo real
                 const timeFromStart = ((action.timestamp - session.startTime) / 1000).toFixed(2);
-                console.log(`[${timeFromStart}s] ${action.type.toUpperCase()}: ${(_a = action.target) === null || _a === void 0 ? void 0 : _a.tagName} "${(_c = (_b = action.target) === null || _b === void 0 ? void 0 : _b.text) === null || _c === void 0 ? void 0 : _c.substring(0, 20)}..."`);
+                console.log(`[${timeFromStart}s] ${action.type.toUpperCase()}: ${action.target?.tagName} "${action.target?.text?.substring(0, 20)}..."`);
             });
         }
         catch (error) {
-            // Ignorar errores de monitoreo
         }
     }, 1000);
-    // Limpiar el monitor cuando termine
     setTimeout(() => {
         clearInterval(actionMonitor);
-    }, 300000); // 5 minutos máximo
+    }, 300000);
 }
 async function generateAutomaticScript(session, downloadPath) {
     const scriptContent = `
@@ -393,7 +338,7 @@ export async function executeLearnedDownloadSequence(page: Page, downloadPath: s
 ${session.userActions.map((action, index) => {
         const delay = index > 0 ? action.timestamp - session.userActions[index - 1].timestamp : 0;
         let actionCode = '';
-        if (delay > 100) { // Si hay más de 100ms de diferencia, agregar espera
+        if (delay > 100) {
             actionCode += `        await page.waitForTimeout(${Math.min(delay, 5000)});\n`;
         }
         if (action.type === 'click' && action.target) {
@@ -436,8 +381,8 @@ ${session.userActions.map((action, index) => {
     }
 }
 `;
-    const scriptPath = path_1.default.join(downloadPath, `learned_download_sequence_${session.sessionId}.ts`);
-    fs_1.default.writeFileSync(scriptPath, scriptContent);
+    const scriptPath = path.join(downloadPath, `learned_download_sequence_${session.sessionId}.ts`);
+    fs.writeFileSync(scriptPath, scriptContent);
     console.log(`📝 Script automático generado: ${scriptPath}`);
     console.log('💡 Puedes usar este script para automatizar futuras descargas');
 }

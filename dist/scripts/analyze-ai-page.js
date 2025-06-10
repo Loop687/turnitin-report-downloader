@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function analyzeAIPage() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -48,7 +20,6 @@ async function analyzeAIPage() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Navegar a Turnitin
         await scraper.navigateToTurnitinInbox(page);
         const currentUrl = page.url();
         if (currentUrl.includes('login')) {
@@ -56,16 +27,13 @@ async function analyzeAIPage() {
             await askQuestion('');
             await scraper.navigateToTurnitinInbox(page);
         }
-        // Seleccionar trabajo
         const workTitle = await askQuestion('¿Cuál es el título del trabajo? (ej: "LA LECTURA.docx"): ');
         console.log(`\n🎯 Procesando: "${workTitle}"`);
-        // Abrir trabajo
         const clickSuccess = await scraper.findAndClickOnSubmission(page, workTitle);
         if (!clickSuccess) {
             console.log('❌ No se pudo abrir el trabajo');
             return;
         }
-        // Encontrar página correcta
         const browser = page.browser();
         const pages = await browser.pages();
         let workingPage = page;
@@ -78,7 +46,6 @@ async function analyzeAIPage() {
         }
         console.log(`📍 Página de trabajo: ${workingPage.url()}`);
         await workingPage.waitForTimeout(3000);
-        // Hacer clic en IA
         console.log('🤖 Haciendo clic en botón de IA...');
         const aiXPath = '//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button';
         let aiReportPage = null;
@@ -103,10 +70,8 @@ async function analyzeAIPage() {
             if (aiReportPage && aiReportPage.url().includes('integrity.turnitin.com')) {
                 console.log('✅ Página del reporte de IA detectada');
                 console.log(`📍 URL: ${aiReportPage.url()}`);
-                // Esperar a que cargue
                 console.log('⏳ Esperando que la página cargue completamente (15 segundos)...');
                 await aiReportPage.waitForTimeout(15000);
-                // ANÁLISIS COMPLETO DE LA PÁGINA
                 await performCompletePageAnalysis(aiReportPage, scraper.getDownloadPath());
             }
             else {
@@ -131,17 +96,13 @@ async function performCompletePageAnalysis(page, downloadPath) {
     console.log('\n🔍 INICIANDO ANÁLISIS COMPLETO DE LA PÁGINA...');
     console.log('===============================================');
     try {
-        // Tomar screenshot
-        const screenshotPath = path_1.default.join(downloadPath, `ai_page_analysis_${Date.now()}.png`);
+        const screenshotPath = path.join(downloadPath, `ai_page_analysis_${Date.now()}.png`);
         await page.screenshot({
             path: screenshotPath,
             fullPage: true
         });
         console.log(`📸 Screenshot guardado en: ${screenshotPath}`);
-        // Análisis completo
         const pageAnalysis = await page.evaluate(() => {
-            var _a;
-            // Función para generar XPath
             function generateXPath(element) {
                 if (element.id) {
                     return `//*[@id="${element.id}"]`;
@@ -167,13 +128,11 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 }
                 return '//' + parts.join('/');
             }
-            // Buscar TODOS los elementos clickeables
             const allClickable = [];
             const selectors = ['button', 'a', '[role="button"]', '[onclick]', 'input[type="button"]', 'input[type="submit"]'];
             selectors.forEach(selector => {
                 const elements = Array.from(document.querySelectorAll(selector));
                 elements.forEach((el, globalIndex) => {
-                    var _a, _b;
                     const computedStyle = window.getComputedStyle(el);
                     const isVisible = computedStyle.display !== 'none' &&
                         computedStyle.visibility !== 'hidden' &&
@@ -182,8 +141,8 @@ async function performCompletePageAnalysis(page, downloadPath) {
                     allClickable.push({
                         globalIndex: allClickable.length + 1,
                         tag: el.tagName,
-                        text: ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '[Sin texto]',
-                        innerText: ((_b = el.innerText) === null || _b === void 0 ? void 0 : _b.trim()) || '[Sin innerText]',
+                        text: el.textContent?.trim() || '[Sin texto]',
+                        innerText: el.innerText?.trim() || '[Sin innerText]',
                         ariaLabel: el.getAttribute('aria-label') || '[Sin aria-label]',
                         title: el.getAttribute('title') || '[Sin title]',
                         className: el.className || '[Sin clases]',
@@ -202,7 +161,6 @@ async function performCompletePageAnalysis(page, downloadPath) {
                             width: el.getBoundingClientRect().width,
                             height: el.getBoundingClientRect().height
                         },
-                        // Verificar si puede ser botón de descarga
                         isLikelyDownloadButton: (() => {
                             const searchText = (el.textContent + ' ' + el.getAttribute('aria-label') + ' ' + el.getAttribute('title') + ' ' + el.className + ' ' + el.id).toLowerCase();
                             return searchText.includes('download') ||
@@ -215,7 +173,6 @@ async function performCompletePageAnalysis(page, downloadPath) {
                     });
                 });
             });
-            // Buscar elementos específicos de Turnitin
             const turnitinElements = [];
             const turnitinSelectors = [
                 'tii-sws-header-btn',
@@ -229,11 +186,10 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 try {
                     const elements = Array.from(document.querySelectorAll(selector));
                     elements.forEach(el => {
-                        var _a;
                         turnitinElements.push({
                             selector: selector,
                             tag: el.tagName,
-                            text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
+                            text: el.textContent?.trim(),
                             id: el.id,
                             className: el.className,
                             xpath: generateXPath(el),
@@ -253,11 +209,10 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 potentialDownloadButtons: allClickable.filter(el => el.isLikelyDownloadButton),
                 allClickableElements: allClickable,
                 turnitinSpecificElements: turnitinElements,
-                pageText: ((_a = document.body.textContent) === null || _a === void 0 ? void 0 : _a.substring(0, 1000)) || '',
+                pageText: document.body.textContent?.substring(0, 1000) || '',
                 htmlStructure: document.body.innerHTML.substring(0, 2000) + '...'
             };
         });
-        // Mostrar resultados
         console.log('\n📊 RESULTADOS DEL ANÁLISIS:');
         console.log('===========================');
         console.log(`📄 Título: ${pageAnalysis.title}`);
@@ -266,7 +221,6 @@ async function performCompletePageAnalysis(page, downloadPath) {
         console.log(`👁️  Elementos clickeables visibles: ${pageAnalysis.visibleClickableElements}`);
         console.log(`📥 Potenciales botones de descarga: ${pageAnalysis.potentialDownloadButtons.length}`);
         console.log(`🔧 Elementos específicos de Turnitin: ${pageAnalysis.turnitinSpecificElements.length}`);
-        // Mostrar elementos potenciales de descarga
         if (pageAnalysis.potentialDownloadButtons.length > 0) {
             console.log('\n📥 POTENCIALES BOTONES DE DESCARGA:');
             console.log('====================================');
@@ -283,7 +237,6 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 console.log(`   📜 HTML: ${el.outerHTML}`);
             });
         }
-        // Mostrar elementos específicos de Turnitin
         if (pageAnalysis.turnitinSpecificElements.length > 0) {
             console.log('\n🔧 ELEMENTOS ESPECÍFICOS DE TURNITIN:');
             console.log('====================================');
@@ -296,7 +249,6 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 console.log(`   📜 HTML: ${el.outerHTML}`);
             });
         }
-        // Mostrar TODOS los elementos clickeables visibles
         console.log('\n👁️ TODOS LOS ELEMENTOS CLICKEABLES VISIBLES:');
         console.log('=============================================');
         const visibleElements = pageAnalysis.allClickableElements.filter(el => el.visible);
@@ -310,11 +262,9 @@ async function performCompletePageAnalysis(page, downloadPath) {
                 console.log(`   🔗 Enlace: ${el.href}`);
             }
         });
-        // Guardar análisis completo
-        const analysisFile = path_1.default.join(downloadPath, `ai_page_complete_analysis_${Date.now()}.json`);
-        fs_1.default.writeFileSync(analysisFile, JSON.stringify(pageAnalysis, null, 2));
+        const analysisFile = path.join(downloadPath, `ai_page_complete_analysis_${Date.now()}.json`);
+        fs.writeFileSync(analysisFile, JSON.stringify(pageAnalysis, null, 2));
         console.log(`\n💾 Análisis completo guardado en: ${analysisFile}`);
-        // Mostrar contenido de texto de la página
         console.log('\n📝 CONTENIDO DE TEXTO DE LA PÁGINA (primeros 500 caracteres):');
         console.log('===============================================================');
         console.log(pageAnalysis.pageText.substring(0, 500) + '...');

@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function manualAIButtonFinder() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -49,16 +21,13 @@ async function manualAIButtonFinder() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Navegar a la bandeja de entrada
         await scraper.navigateToTurnitinInbox(page);
-        // Verificar login
         const currentUrl = page.url();
         if (currentUrl.includes('login')) {
             console.log('🔐 Inicia sesión manualmente y presiona ENTER...');
             await askQuestion('');
             await scraper.navigateToTurnitinInbox(page);
         }
-        // Seleccionar un trabajo para analizar
         const workTitle = await askQuestion('¿Cuál es el título del trabajo que quieres analizar? (ej: "LA LECTURA.docx"): ');
         console.log(`\n🎯 Buscando trabajo: "${workTitle}"`);
         const clickSuccess = await scraper.findAndClickOnSubmission(page, workTitle);
@@ -66,13 +35,11 @@ async function manualAIButtonFinder() {
             console.log('❌ No se pudo encontrar o hacer clic en el trabajo');
             return;
         }
-        // Verificar si hay múltiples páginas abiertas (nueva ventana)
         const browser = page.browser();
         const pages = await browser.pages();
         console.log(`📑 Páginas abiertas: ${pages.length}`);
         let workingPage = page;
         if (pages.length > 1) {
-            // Buscar la página que contiene 'carta' en la URL
             for (const p of pages) {
                 const url = p.url();
                 if (url.includes('ev.turnitin.com/app/carta')) {
@@ -84,13 +51,10 @@ async function manualAIButtonFinder() {
         }
         console.log('✅ Trabajo abierto exitosamente');
         console.log(`📍 Analizando página: ${workingPage.url()}`);
-        // Esperar un poco más para que cargue completamente
         await workingPage.waitForTimeout(5000);
         console.log('\n🔍 Escaneando todos los elementos clickeables en la página...');
-        // Buscar elementos específicos y crear una lista más ordenada
         const allElements = await workingPage.evaluate(() => {
             const foundElements = [];
-            // 1. Buscar específicamente elementos de IA de Turnitin
             const turnitinSelectors = [
                 'tii-aiw-button',
                 'tii-aiw-ev-button',
@@ -114,7 +78,6 @@ async function manualAIButtonFinder() {
                     console.log(`Error con selector ${selector}:`, error);
                 }
             });
-            // 2. Buscar elementos anidados dentro de componentes de IA
             const aiContainers = Array.from(document.querySelectorAll('tii-aiw-button, tii-aiw-ev-button, tdl-tooltip'));
             aiContainers.forEach(container => {
                 const nestedElements = Array.from(container.querySelectorAll('button, [role="button"], *[onclick]'));
@@ -126,13 +89,11 @@ async function manualAIButtonFinder() {
                     });
                 });
             });
-            // 3. Buscar otros elementos clickeables
             const otherSelectors = ['button', 'a', '[role="button"]', '[onclick]'];
             otherSelectors.forEach(selector => {
                 try {
                     const elements = Array.from(document.querySelectorAll(selector));
                     elements.forEach(el => {
-                        // Evitar duplicados
                         const isDuplicate = foundElements.some(item => item.element === el);
                         if (!isDuplicate) {
                             foundElements.push({
@@ -147,11 +108,8 @@ async function manualAIButtonFinder() {
                     console.log(`Error con selector ${selector}:`, error);
                 }
             });
-            // Procesar elementos y crear datos estructurados
             return foundElements.map((item, index) => {
-                var _a, _b;
                 const element = item.element;
-                // Generar XPath mejorado
                 const generateXPath = (el) => {
                     if (el.id) {
                         return `//*[@id="${el.id}"]`;
@@ -161,7 +119,6 @@ async function manualAIButtonFinder() {
                     while (currentEl && currentEl.parentElement) {
                         let tagName = currentEl.tagName.toLowerCase();
                         let index = 1;
-                        // Contar hermanos del mismo tipo
                         let sibling = currentEl.previousElementSibling;
                         while (sibling) {
                             if (sibling.tagName === currentEl.tagName) {
@@ -169,9 +126,7 @@ async function manualAIButtonFinder() {
                             }
                             sibling = sibling.previousElementSibling;
                         }
-                        // Solo agregar índice si hay múltiples hermanos
-                        const siblings = Array.from(currentEl.parentElement.children).filter(child => child.tagName === currentEl.tagName // Usar ! para indicar que sabemos que no es null
-                        );
+                        const siblings = Array.from(currentEl.parentElement.children).filter(child => child.tagName === currentEl.tagName);
                         if (siblings.length > 1) {
                             tagName += `[${index}]`;
                         }
@@ -185,7 +140,7 @@ async function manualAIButtonFinder() {
                     category: item.category,
                     priority: item.priority,
                     tagName: element.tagName,
-                    text: ((_a = element.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '[Sin texto]',
+                    text: element.textContent?.trim() || '[Sin texto]',
                     ariaLabel: element.getAttribute('aria-label') || '[Sin aria-label]',
                     title: element.getAttribute('title') || '[Sin title]',
                     className: element.className || '[Sin clases]',
@@ -204,18 +159,16 @@ async function manualAIButtonFinder() {
                         percent: element.getAttribute('percent'),
                         submissionTrn: element.getAttribute('submission-trn')
                     },
-                    outerHTML: ((_b = element.outerHTML) === null || _b === void 0 ? void 0 : _b.substring(0, 200)) + '...'
+                    outerHTML: element.outerHTML?.substring(0, 200) + '...'
                 };
                 return elementData;
-            }).filter(el => el.visible); // Solo elementos visibles
+            }).filter(el => el.visible);
         });
-        // Separar elementos por categoría
         const aiElements = allElements.filter(el => el.category.includes('Turnitin'));
         const otherElements = allElements.filter(el => !el.category.includes('Turnitin'));
         console.log(`\n📊 Encontrados ${allElements.length} elementos clickeables visibles`);
         console.log(`   🤖 Elementos de IA: ${aiElements.length}`);
         console.log(`   🔘 Otros elementos: ${otherElements.length}`);
-        // Mostrar elementos de IA primero
         if (aiElements.length > 0) {
             console.log('\n🤖 ELEMENTOS DE IA DE TURNITIN:');
             console.log('===============================');
@@ -231,7 +184,6 @@ async function manualAIButtonFinder() {
                 console.log(`   📜 HTML: ${el.outerHTML}`);
             });
         }
-        // Mostrar algunos otros elementos
         if (otherElements.length > 0) {
             console.log('\n🔘 OTROS ELEMENTOS IMPORTANTES:');
             console.log('===============================');
@@ -277,14 +229,12 @@ async function manualAIButtonFinder() {
             console.log(`   📝 Texto: "${selectedElement.text}"`);
             console.log(`   🎯 XPath: ${selectedElement.xpath}`);
         }
-        // Probar el clic
         const testClick = await askQuestion('\n¿Quieres probar hacer clic en este elemento? (s/n): ');
         if (testClick.toLowerCase() === 's') {
             try {
                 console.log(`🖱️ Haciendo clic en el elemento...`);
                 const targetXPath = useCustomXPath ? customXPath : selectedElement.xpath;
                 let success = false;
-                // Configurar listener para nuevas pestañas antes del clic
                 const browser = workingPage.browser();
                 let newPage = null;
                 const pagePromise = new Promise((resolve) => {
@@ -295,13 +245,11 @@ async function manualAIButtonFinder() {
                         }
                     };
                     browser.on('targetcreated', onTargetCreated);
-                    // Timeout de seguridad
                     setTimeout(() => {
                         browser.off('targetcreated', onTargetCreated);
                         resolve(null);
                     }, 10000);
                 });
-                // Intentar clic con XPath
                 try {
                     const elements = await workingPage.$x(targetXPath);
                     console.log(`🔍 Elementos encontrados con XPath: ${elements.length}`);
@@ -317,7 +265,6 @@ async function manualAIButtonFinder() {
                 catch (error) {
                     console.log(`❌ Error con XPath: ${error}`);
                 }
-                // Si XPath falló y no es personalizado, intentar CSS
                 if (!success && !useCustomXPath && selectedElement.cssSelector) {
                     try {
                         await workingPage.click(selectedElement.cssSelector);
@@ -330,15 +277,13 @@ async function manualAIButtonFinder() {
                 }
                 if (success) {
                     console.log('⏳ Esperando nueva pestaña...');
-                    // Esperar a que se abra nueva pestaña
                     newPage = await pagePromise;
-                    let targetPage = workingPage; // Por defecto usar la página actual
+                    let targetPage = workingPage;
                     if (newPage) {
                         console.log('🆕 Nueva pestaña detectada');
-                        await newPage.waitForTimeout(5000); // Esperar a que cargue
+                        await newPage.waitForTimeout(5000);
                         const newUrl = newPage.url();
                         console.log(`📍 URL de nueva pestaña: ${newUrl}`);
-                        // Verificar si la nueva pestaña es de Turnitin Integrity (reporte de IA)
                         if (newUrl.includes('integrity.turnitin.com') || newUrl.includes('awo-usw2.integrity.turnitin.com')) {
                             console.log('✅ Nueva pestaña es del reporte de IA, cambiando contexto...');
                             targetPage = newPage;
@@ -353,36 +298,27 @@ async function manualAIButtonFinder() {
                     }
                     const finalUrl = targetPage.url();
                     console.log(`📍 URL final analizada: ${finalUrl}`);
-                    // Verificar cambios en la página correcta
-                    const pageInfo = await targetPage.evaluate(() => {
-                        var _a, _b, _c, _d, _e;
-                        return ({
-                            title: document.title,
-                            url: window.location.href,
-                            hasAIContent: ((_a = document.body.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes('artificial intelligence')) ||
-                                ((_b = document.body.textContent) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes('ai detection')) ||
-                                ((_c = document.body.textContent) === null || _c === void 0 ? void 0 : _c.toLowerCase().includes('ai writing')) ||
-                                ((_d = document.body.textContent) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('detected as ai')),
-                            hasDownloadLinks: document.querySelectorAll('*[href*="download"], *[title*="download"], button[title*="Download"], a[title*="Download"]').length,
-                            contentPreview: ((_e = document.body.textContent) === null || _e === void 0 ? void 0 : _e.substring(0, 500)) || '',
-                            // Buscar específicamente elementos de descarga
-                            downloadElements: Array.from(document.querySelectorAll('button, a')).filter(el => {
-                                var _a, _b, _c;
-                                const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-                                const title = ((_b = el.getAttribute('title')) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
-                                const ariaLabel = ((_c = el.getAttribute('aria-label')) === null || _c === void 0 ? void 0 : _c.toLowerCase()) || '';
-                                return text.includes('download') || title.includes('download') || ariaLabel.includes('download');
-                            }).map(el => {
-                                var _a;
-                                return ({
-                                    tag: el.tagName,
-                                    text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
-                                    title: el.getAttribute('title'),
-                                    href: el.href || 'N/A'
-                                });
-                            })
-                        });
-                    });
+                    const pageInfo = await targetPage.evaluate(() => ({
+                        title: document.title,
+                        url: window.location.href,
+                        hasAIContent: document.body.textContent?.toLowerCase().includes('artificial intelligence') ||
+                            document.body.textContent?.toLowerCase().includes('ai detection') ||
+                            document.body.textContent?.toLowerCase().includes('ai writing') ||
+                            document.body.textContent?.toLowerCase().includes('detected as ai'),
+                        hasDownloadLinks: document.querySelectorAll('*[href*="download"], *[title*="download"], button[title*="Download"], a[title*="Download"]').length,
+                        contentPreview: document.body.textContent?.substring(0, 500) || '',
+                        downloadElements: Array.from(document.querySelectorAll('button, a')).filter(el => {
+                            const text = el.textContent?.toLowerCase() || '';
+                            const title = el.getAttribute('title')?.toLowerCase() || '';
+                            const ariaLabel = el.getAttribute('aria-label')?.toLowerCase() || '';
+                            return text.includes('download') || title.includes('download') || ariaLabel.includes('download');
+                        }).map(el => ({
+                            tag: el.tagName,
+                            text: el.textContent?.trim(),
+                            title: el.getAttribute('title'),
+                            href: el.href || 'N/A'
+                        }))
+                    }));
                     console.log('\n📋 Información de la página del reporte de IA:');
                     console.log(`   📄 Título: ${pageInfo.title}`);
                     console.log(`   🌐 URL: ${pageInfo.url}`);
@@ -395,31 +331,25 @@ async function manualAIButtonFinder() {
                             console.log(`   ${index + 1}. <${el.tag}> "${el.text}" - ${el.href}`);
                             console.log(`      Title: ${el.title || 'N/A'}`);
                         });
-                        // Usar el XPath específico que encontraste
                         const specificDownloadXPath = '//*[@id="download-popover"]/ul/li/button';
                         console.log('\n🎯 Usando XPath específico del botón de descarga...');
                         const tryDownload = await askQuestion('\n¿Quieres intentar descargar usando el XPath específico? (s/n): ');
                         if (tryDownload.toLowerCase() === 's') {
                             try {
                                 console.log(`🖱️ Haciendo clic en: ${specificDownloadXPath}`);
-                                // Intentar con el XPath específico
                                 const downloadElements = await targetPage.$x(specificDownloadXPath);
                                 console.log(`🔍 Elementos encontrados con XPath de descarga: ${downloadElements.length}`);
                                 if (downloadElements.length > 0) {
-                                    // Configurar listener para descargas antes del clic
                                     console.log('📁 Configurando directorio de descarga...');
-                                    // Configurar descarga
                                     const client = await targetPage.target().createCDPSession();
                                     await client.send('Page.setDownloadBehavior', {
                                         behavior: 'allow',
                                         downloadPath: scraper.getDownloadPath()
                                     });
-                                    // Hacer clic en el botón de descarga
                                     await downloadElements[0].click();
                                     console.log('✅ Clic en descarga realizado exitosamente');
                                     console.log('⏳ Esperando descarga (15 segundos)...');
                                     await targetPage.waitForTimeout(15000);
-                                    // Verificar archivos descargados
                                     const downloadPath = scraper.getDownloadPath();
                                     console.log(`📂 Verificando archivos en: ${downloadPath}`);
                                     try {
@@ -427,11 +357,11 @@ async function manualAIButtonFinder() {
                                         const files = fs.readdirSync(downloadPath);
                                         const pdfFiles = files.filter((f) => f.endsWith('.pdf'));
                                         const recentFiles = files.filter((f) => {
-                                            const filePath = path_1.default.join(downloadPath, f);
+                                            const filePath = path.join(downloadPath, f);
                                             const stats = fs.statSync(filePath);
                                             const now = new Date();
                                             const fileTime = new Date(stats.mtime);
-                                            return (now.getTime() - fileTime.getTime()) < 60000; // Archivos de los últimos 60 segundos
+                                            return (now.getTime() - fileTime.getTime()) < 60000;
                                         });
                                         console.log(`📋 Archivos en directorio: ${files.length}`);
                                         console.log(`📄 Archivos PDF: ${pdfFiles.length}`);
@@ -440,17 +370,16 @@ async function manualAIButtonFinder() {
                                             console.log('\n✅ ¡DESCARGA EXITOSA!');
                                             console.log('📁 Archivos descargados recientemente:');
                                             recentFiles.forEach((file, index) => {
-                                                const filePath = path_1.default.join(downloadPath, file);
+                                                const filePath = path.join(downloadPath, file);
                                                 const stats = fs.statSync(filePath);
                                                 console.log(`   ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                                             });
-                                            // Renombrar el archivo más reciente si es PDF
                                             const recentPdf = recentFiles.find((f) => f.endsWith('.pdf'));
                                             if (recentPdf) {
                                                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                                                 const newName = `AI_Report_${workTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`;
-                                                const oldPath = path_1.default.join(downloadPath, recentPdf);
-                                                const newPath = path_1.default.join(downloadPath, newName);
+                                                const oldPath = path.join(downloadPath, recentPdf);
+                                                const newPath = path.join(downloadPath, newName);
                                                 try {
                                                     fs.renameSync(oldPath, newPath);
                                                     console.log(`📝 Archivo renombrado a: ${newName}`);
@@ -471,15 +400,12 @@ async function manualAIButtonFinder() {
                                 }
                                 else {
                                     console.log('❌ No se encontró el botón de descarga con el XPath específico');
-                                    // Fallback: buscar cualquier botón de descarga
                                     console.log('🔄 Intentando con búsqueda general de botones de descarga...');
                                     const fallbackResult = await targetPage.evaluate(() => {
-                                        var _a;
                                         const downloadButtons = Array.from(document.querySelectorAll('button, a')).filter(el => {
-                                            var _a, _b, _c;
-                                            const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-                                            const title = ((_b = el.getAttribute('title')) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
-                                            const ariaLabel = ((_c = el.getAttribute('aria-label')) === null || _c === void 0 ? void 0 : _c.toLowerCase()) || '';
+                                            const text = el.textContent?.toLowerCase() || '';
+                                            const title = el.getAttribute('title')?.toLowerCase() || '';
+                                            const ariaLabel = el.getAttribute('aria-label')?.toLowerCase() || '';
                                             return text.includes('download') ||
                                                 title.includes('download') ||
                                                 ariaLabel.includes('download') ||
@@ -489,7 +415,7 @@ async function manualAIButtonFinder() {
                                             downloadButtons[0].click();
                                             return {
                                                 success: true,
-                                                elementText: (_a = downloadButtons[0].textContent) === null || _a === void 0 ? void 0 : _a.trim(),
+                                                elementText: downloadButtons[0].textContent?.trim(),
                                                 totalFound: downloadButtons.length
                                             };
                                         }
@@ -511,7 +437,6 @@ async function manualAIButtonFinder() {
                         }
                     }
                     else {
-                        // Si no se detectaron elementos de descarga automáticamente, usar el XPath específico
                         console.log('\n🎯 No se detectaron elementos automáticamente, usando XPath específico...');
                         const trySpecificXPath = await askQuestion('¿Quieres probar el XPath específico del botón de descarga? (s/n): ');
                         if (trySpecificXPath.toLowerCase() === 's') {
@@ -545,7 +470,6 @@ async function manualAIButtonFinder() {
                 console.log(`❌ Error durante el test: ${error}`);
             }
         }
-        // Guardar información para debugging
         const debugInfo = {
             workTitle: workTitle,
             pageUrl: workingPage.url(),
@@ -554,8 +478,8 @@ async function manualAIButtonFinder() {
             selectedElement: selectedElement,
             timestamp: new Date().toISOString()
         };
-        const debugFile = path_1.default.join(scraper.getDownloadPath(), `ai-finder-debug-${Date.now()}.json`);
-        fs_1.default.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
+        const debugFile = path.join(scraper.getDownloadPath(), `ai-finder-debug-${Date.now()}.json`);
+        fs.writeFileSync(debugFile, JSON.stringify(debugInfo, null, 2));
         console.log(`\n💾 Información de debug guardada en: ${debugFile}`);
     }
     catch (error) {

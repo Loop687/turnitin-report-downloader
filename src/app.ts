@@ -2,8 +2,10 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
-import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader';
 import cors, { CorsOptions } from 'cors';
+
+// Fix import path for production
+import { coordinateBasedDownloader, closeBrowserSession } from './scripts/coordinate-based-downloader.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);

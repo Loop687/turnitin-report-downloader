@@ -1,37 +1,9 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const improved_turnitin_scraper_service_1 = require("../services/improved-turnitin-scraper.service");
-const readline = __importStar(require("readline"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import { ImprovedTurnitinScraperService } from '../services/improved-turnitin-scraper.service';
+import * as readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 async function directAIDownloader() {
-    const scraper = new improved_turnitin_scraper_service_1.ImprovedTurnitinScraperService(true);
+    const scraper = new ImprovedTurnitinScraperService(true);
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -48,7 +20,6 @@ async function directAIDownloader() {
         console.log('');
         await scraper.initializeBrowser();
         const page = await scraper.createNewPage();
-        // Navegar a Turnitin
         await scraper.navigateToTurnitinInbox(page);
         const currentUrl = page.url();
         if (currentUrl.includes('login')) {
@@ -56,18 +27,15 @@ async function directAIDownloader() {
             await askQuestion('');
             await scraper.navigateToTurnitinInbox(page);
         }
-        // Seleccionar trabajo - usar exactamente el mismo que en el debug
         console.log('📋 Usando información del archivo de debug...');
-        const workTitle = "LA LECTURA.docx"; // Del archivo de debug
+        const workTitle = "LA LECTURA.docx";
         console.log(`\n🎯 Procesando: "${workTitle}"`);
-        // PASO 1: Abrir trabajo
         console.log('📋 PASO 1: Abriendo trabajo...');
         const clickSuccess = await scraper.findAndClickOnSubmission(page, workTitle);
         if (!clickSuccess) {
             console.log('❌ No se pudo abrir el trabajo');
             return;
         }
-        // PASO 2: Encontrar página correcta
         console.log('🔍 PASO 2: Buscando ventana del reporte...');
         const browser = page.browser();
         const pages = await browser.pages();
@@ -81,9 +49,7 @@ async function directAIDownloader() {
             }
         }
         await workingPage.waitForTimeout(5000);
-        // PASO 3: Usar información exacta del archivo de debug
         console.log('🤖 PASO 3: Haciendo clic en botón de IA usando información exacta del debug...');
-        // Información exacta del archivo de debug
         const debugInfo = {
             xpath: "//body/div[6]/div[1]/aside/div[1]/div[3]/tii-aiw-button",
             cssSelector: "tii-aiw-button.hydrated",
@@ -97,7 +63,6 @@ async function directAIDownloader() {
         console.log(`🎯 XPath del debug: ${debugInfo.xpath}`);
         console.log(`🎯 CSS del debug: ${debugInfo.cssSelector}`);
         console.log(`🎯 Submission TRN: ${debugInfo.submissionTrn}`);
-        // Configurar listener para nueva pestaña
         let aiReportPage = null;
         const pagePromise = new Promise((resolve) => {
             const onTargetCreated = async (target) => {
@@ -112,12 +77,10 @@ async function directAIDownloader() {
                 resolve(null);
             }, 15000);
         });
-        // Verificar elementos disponibles usando CSS selector del debug
         console.log('🔍 Verificando elementos usando CSS selector del debug...');
         const cssElements = await workingPage.$$(debugInfo.cssSelector);
         console.log(`✅ Elementos encontrados con CSS: ${cssElements.length}`);
         if (cssElements.length > 0) {
-            // Verificar atributos del primer elemento
             const elementInfo = await workingPage.evaluate((selector) => {
                 const element = document.querySelector(selector);
                 if (element) {
@@ -134,21 +97,19 @@ async function directAIDownloader() {
                 return null;
             }, debugInfo.cssSelector);
             console.log('📋 Información del elemento encontrado:');
-            console.log(`   Tag: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.tagName}`);
-            console.log(`   Type: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.type}`);
-            console.log(`   Status: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.status}`);
-            console.log(`   Percent: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.percent}`);
-            console.log(`   Submission TRN: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.submissionTrn}`);
-            console.log(`   Visible: ${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.visible}`);
-            // Verificar que los atributos coincidan con el debug
-            const attributesMatch = (elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.type) === debugInfo.expectedAttributes.type &&
-                (elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.status) === debugInfo.expectedAttributes.status &&
-                (elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.percent) === debugInfo.expectedAttributes.percent;
+            console.log(`   Tag: ${elementInfo?.tagName}`);
+            console.log(`   Type: ${elementInfo?.type}`);
+            console.log(`   Status: ${elementInfo?.status}`);
+            console.log(`   Percent: ${elementInfo?.percent}`);
+            console.log(`   Submission TRN: ${elementInfo?.submissionTrn}`);
+            console.log(`   Visible: ${elementInfo?.visible}`);
+            const attributesMatch = elementInfo?.type === debugInfo.expectedAttributes.type &&
+                elementInfo?.status === debugInfo.expectedAttributes.status &&
+                elementInfo?.percent === debugInfo.expectedAttributes.percent;
             if (attributesMatch) {
                 console.log('✅ Atributos coinciden con el archivo de debug, haciendo clic...');
                 await cssElements[0].click();
                 console.log('✅ Clic en IA realizado usando CSS selector');
-                // Esperar nueva pestaña
                 console.log('⏳ Esperando nueva pestaña del reporte de IA...');
                 aiReportPage = await pagePromise;
                 if (aiReportPage) {
@@ -157,7 +118,6 @@ async function directAIDownloader() {
                     console.log(`📍 URL del reporte: ${aiUrl}`);
                     if (aiUrl.includes('integrity.turnitin.com')) {
                         console.log('✅ ¡Llegamos a la página del reporte de IA!');
-                        // PASO 4: Proceso de descarga interactivo
                         console.log('🔍 PASO 4: Iniciando proceso de descarga...');
                         await performInteractiveDownload(aiReportPage, scraper.getDownloadPath(), workTitle);
                     }
@@ -173,12 +133,11 @@ async function directAIDownloader() {
                 console.log('⚠️ Los atributos no coinciden con el archivo de debug');
                 console.log('🔍 Elementos disponibles:');
                 console.log(`   Esperado: type=${debugInfo.expectedAttributes.type}, status=${debugInfo.expectedAttributes.status}, percent=${debugInfo.expectedAttributes.percent}`);
-                console.log(`   Encontrado: type=${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.type}, status=${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.status}, percent=${elementInfo === null || elementInfo === void 0 ? void 0 : elementInfo.percent}`);
+                console.log(`   Encontrado: type=${elementInfo?.type}, status=${elementInfo?.status}, percent=${elementInfo?.percent}`);
             }
         }
         else {
             console.log('❌ No se encontró elemento con CSS selector del debug');
-            // Intentar con XPath del debug
             console.log('🔄 Intentando con XPath del debug...');
             const xpathElements = await workingPage.$x(debugInfo.xpath);
             console.log(`🔍 Elementos encontrados con XPath: ${xpathElements.length}`);
@@ -217,11 +176,9 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
         });
     };
     try {
-        // Tomar screenshot
-        const screenshotPath = path_1.default.join(downloadPath, `ai_report_page_${Date.now()}.png`);
+        const screenshotPath = path.join(downloadPath, `ai_report_page_${Date.now()}.png`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`📸 Screenshot: ${screenshotPath}`);
-        // Analizar elementos clickeables
         const elements = await page.evaluate(() => {
             const clickables = [];
             const selectors = ['button', 'a', '[role="button"]', '[onclick]', '*[class*="download"]', '*[id*="download"]'];
@@ -229,12 +186,10 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
                 try {
                     const found = Array.from(document.querySelectorAll(selector));
                     found.forEach(el => {
-                        var _a;
                         const isVisible = window.getComputedStyle(el).display !== 'none' &&
                             window.getComputedStyle(el).visibility !== 'hidden' &&
                             el.offsetWidth > 0;
                         if (isVisible) {
-                            // Generar XPath simple
                             let xpath = '';
                             if (el.id) {
                                 xpath = `//*[@id="${el.id}"]`;
@@ -258,7 +213,7 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
                             clickables.push({
                                 index: clickables.length + 1,
                                 tag: el.tagName,
-                                text: ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 100)) || '[Sin texto]',
+                                text: el.textContent?.trim().substring(0, 100) || '[Sin texto]',
                                 className: el.className || '[Sin clases]',
                                 id: el.id || '[Sin ID]',
                                 xpath: xpath
@@ -276,15 +231,11 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
         console.log('===========================================');
         if (elements.length === 0) {
             console.log('❌ No se encontraron elementos clickeables');
-            // Mostrar contenido de la página
-            const content = await page.evaluate(() => {
-                var _a;
-                return ({
-                    title: document.title,
-                    bodyText: (_a = document.body.textContent) === null || _a === void 0 ? void 0 : _a.substring(0, 300),
-                    allElements: document.querySelectorAll('*').length
-                });
-            });
+            const content = await page.evaluate(() => ({
+                title: document.title,
+                bodyText: document.body.textContent?.substring(0, 300),
+                allElements: document.querySelectorAll('*').length
+            }));
             console.log(`📄 Título: ${content.title}`);
             console.log(`📝 Contenido: ${content.bodyText}...`);
             console.log(`🔧 Total elementos DOM: ${content.allElements}`);
@@ -318,8 +269,7 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
                     if (elementIndex >= 0 && elementIndex < elements.length) {
                         const selectedElement = elements[elementIndex];
                         console.log(`\n🖱️ Haciendo clic en: <${selectedElement.tag}> "${selectedElement.text}"`);
-                        // Obtener archivos antes del clic
-                        const filesBefore = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                        const filesBefore = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                         try {
                             const xpathElements = await page.$x(selectedElement.xpath);
                             if (xpathElements.length > 0) {
@@ -327,25 +277,23 @@ async function performInteractiveDownload(page, downloadPath, workTitle) {
                                 console.log('✅ Clic realizado');
                                 console.log('⏳ Esperando respuesta (10 segundos)...');
                                 await page.waitForTimeout(10000);
-                                // Verificar descargas
-                                const filesAfter = fs_1.default.existsSync(downloadPath) ? fs_1.default.readdirSync(downloadPath) : [];
+                                const filesAfter = fs.existsSync(downloadPath) ? fs.readdirSync(downloadPath) : [];
                                 const newFiles = filesAfter.filter(f => !filesBefore.includes(f));
                                 if (newFiles.length > 0) {
                                     console.log('🎉 ¡DESCARGA DETECTADA!');
                                     newFiles.forEach((file, index) => {
-                                        const filePath = path_1.default.join(downloadPath, file);
-                                        const stats = fs_1.default.statSync(filePath);
+                                        const filePath = path.join(downloadPath, file);
+                                        const stats = fs.statSync(filePath);
                                         console.log(`   📄 ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
                                     });
-                                    // Renombrar si es PDF
                                     const pdfFile = newFiles.find(f => f.endsWith('.pdf'));
                                     if (pdfFile) {
                                         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                                         const newName = `AI_Report_${workTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}.pdf`;
-                                        const oldPath = path_1.default.join(downloadPath, pdfFile);
-                                        const newPath = path_1.default.join(downloadPath, newName);
+                                        const oldPath = path.join(downloadPath, pdfFile);
+                                        const newPath = path.join(downloadPath, newName);
                                         try {
-                                            fs_1.default.renameSync(oldPath, newPath);
+                                            fs.renameSync(oldPath, newPath);
                                             console.log(`📝 Archivo renombrado: ${newName}`);
                                         }
                                         catch (error) {

@@ -1,13 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.replayAction = exports.replayLearnedSession = void 0;
-// Función principal de replay
 async function replayLearnedSession() {
     console.log('🔄 Iniciando replay de sesión aprendida...');
-    // TODO: Implementar lógica de replay
     console.log('⚠️ Función de replay temporalmente deshabilitada');
 }
-exports.replayLearnedSession = replayLearnedSession;
 async function replayAction(page, action) {
     console.log(`🔄 Reproduciendo: ${action.type} en ${action.selector}`);
     try {
@@ -22,9 +16,7 @@ async function replayAction(page, action) {
                             console.log(`   🖱️ Clic en coordenadas: (${action.coordinates.x}, ${action.coordinates.y})`);
                         }
                         else {
-                            // FIX: Usar page.evaluate para hacer clic sin problemas de tipos
                             await page.evaluate((element) => {
-                                // Verificar que el elemento es HTMLElement y hacer clic
                                 if (element && 'click' in element && typeof element.click === 'function') {
                                     element.click();
                                 }
@@ -61,8 +53,7 @@ async function replayAction(page, action) {
         console.error(`   💥 Error reproduciendo acción: ${error}`);
     }
 }
-exports.replayAction = replayAction;
-// Ejecutar si es llamado directamente
 if (require.main === module) {
     replayLearnedSession().catch(console.error);
 }
+export { replayLearnedSession, replayAction };

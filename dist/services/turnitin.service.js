@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TurnitinService = void 0;
-class TurnitinService {
+export class TurnitinService {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseUrl = 'https://api.turnitin.com'; // Replace with actual Turnitin API base URL
+        this.baseUrl = 'https://api.turnitin.com';
     }
     async fetchReport(reportId) {
         const response = await fetch(`${this.baseUrl}/reports/${reportId}`, {
@@ -33,4 +30,3 @@ class TurnitinService {
         return await response.blob();
     }
 }
-exports.TurnitinService = TurnitinService;

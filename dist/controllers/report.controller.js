@@ -1,18 +1,12 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportController = void 0;
-const fs_1 = __importDefault(require("fs"));
-class ReportController {
+import fs from 'fs';
+export class ReportController {
     constructor(reportStorageService) {
         this.reportStorageService = reportStorageService;
     }
     async uploadReport(req, res) {
-        const authReq = req; // Cast a AuthenticatedRequest
+        const authReq = req;
         try {
-            if (!authReq.file) { // req.file es añadido por multer
+            if (!authReq.file) {
                 return res.status(400).json({ message: 'No file uploaded.' });
             }
             if (!authReq.user || authReq.user.role !== 'instructor') {
@@ -40,15 +34,14 @@ class ReportController {
         }
     }
     async getReport(req, res) {
-        var _a, _b;
-        const authReq = req; // Cast a AuthenticatedRequest
+        const authReq = req;
         try {
             const reportId = authReq.params.id;
             const report = await this.reportStorageService.findReportForStudent(reportId);
             if (!report) {
                 return res.status(404).json({ message: 'Report not found' });
             }
-            if (((_a = authReq.user) === null || _a === void 0 ? void 0 : _a.role) === 'student' && ((_b = authReq.user) === null || _b === void 0 ? void 0 : _b.id) !== report.studentId) {
+            if (authReq.user?.role === 'student' && authReq.user?.id !== report.studentId) {
                 return res.status(403).json({ message: 'Forbidden: You can only access your own report.' });
             }
             res.status(200).json(report);
@@ -58,7 +51,7 @@ class ReportController {
         }
     }
     async downloadStudentReport(req, res) {
-        const authReq = req; // Cast a AuthenticatedRequest
+        const authReq = req;
         try {
             if (!authReq.user || authReq.user.role !== 'student') {
                 return res.status(403).json({ message: 'Forbidden. Student access required for this route.' });
@@ -69,10 +62,10 @@ class ReportController {
                 return res.status(404).json({ message: 'Report not found for your account.' });
             }
             const filePath = this.reportStorageService.getReportFilePath(report.storedFilename);
-            if (fs_1.default.existsSync(filePath)) {
+            if (fs.existsSync(filePath)) {
                 res.setHeader('Content-Disposition', `attachment; filename=${report.originalFilename}`);
                 res.setHeader('Content-Type', report.mimeType);
-                const fileStream = fs_1.default.createReadStream(filePath);
+                const fileStream = fs.createReadStream(filePath);
                 fileStream.pipe(res);
             }
             else {
@@ -85,4 +78,3 @@ class ReportController {
         }
     }
 }
-exports.ReportController = ReportController;

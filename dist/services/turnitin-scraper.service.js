@@ -1,26 +1,20 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TurnitinScraperService = void 0;
-const puppeteer_1 = __importDefault(require("puppeteer"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const report_storage_service_1 = require("./report-storage.service");
-class TurnitinScraperService {
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import { ReportStorageService } from './report-storage.service';
+export class TurnitinScraperService {
     constructor(debugMode = false) {
         this.browser = null;
-        this.reportStorageService = new report_storage_service_1.ReportStorageService();
-        this.downloadPath = path_1.default.join(__dirname, '..', '..', 'temp-downloads');
+        this.reportStorageService = new ReportStorageService();
+        this.downloadPath = path.join(__dirname, '..', '..', 'temp-downloads');
         this.debugMode = debugMode;
-        if (!fs_1.default.existsSync(this.downloadPath)) {
-            fs_1.default.mkdirSync(this.downloadPath, { recursive: true });
+        if (!fs.existsSync(this.downloadPath)) {
+            fs.mkdirSync(this.downloadPath, { recursive: true });
         }
     }
     async initializeBrowser() {
         console.log('🚀 Iniciando navegador para scraping...');
-        this.browser = await puppeteer_1.default.launch({
+        this.browser = await puppeteer.launch({
             headless: false,
             defaultViewport: null,
             args: [
@@ -62,41 +56,31 @@ class TurnitinScraperService {
             const pageInfo = await page.evaluate(() => {
                 const url = window.location.href;
                 const title = document.title;
-                const allLinks = Array.from(document.querySelectorAll('a')).map(a => {
-                    var _a;
-                    return ({
-                        text: (_a = a.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
-                        href: a.href,
-                        classes: a.className
-                    });
-                }).filter(link => link.text && link.text.length > 0);
-                const allButtons = Array.from(document.querySelectorAll('button')).map(btn => {
-                    var _a;
-                    return ({
-                        text: (_a = btn.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
-                        title: btn.title,
-                        classes: btn.className
-                    });
-                }).filter(btn => btn.text && btn.text.length > 0);
+                const allLinks = Array.from(document.querySelectorAll('a')).map(a => ({
+                    text: a.textContent?.trim(),
+                    href: a.href,
+                    classes: a.className
+                })).filter(link => link.text && link.text.length > 0);
+                const allButtons = Array.from(document.querySelectorAll('button')).map(btn => ({
+                    text: btn.textContent?.trim(),
+                    title: btn.title,
+                    classes: btn.className
+                })).filter(btn => btn.text && btn.text.length > 0);
                 const tables = Array.from(document.querySelectorAll('table')).map(table => ({
-                    headers: Array.from(table.querySelectorAll('th')).map(th => { var _a; return (_a = th.textContent) === null || _a === void 0 ? void 0 : _a.trim(); }),
+                    headers: Array.from(table.querySelectorAll('th')).map(th => th.textContent?.trim()),
                     rows: Array.from(table.querySelectorAll('tr')).length
                 }));
                 const relevantElements = Array.from(document.querySelectorAll('*')).filter(el => {
-                    var _a;
-                    const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+                    const text = el.textContent?.toLowerCase() || '';
                     return (text.includes('student') || text.includes('assignment') ||
                         text.includes('submission') || text.includes('paper')) &&
                         text.length < 200;
-                }).map(el => {
-                    var _a;
-                    return ({
-                        tag: el.tagName,
-                        text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
-                        classes: el.className,
-                        id: el.id
-                    });
-                }).slice(0, 10);
+                }).map(el => ({
+                    tag: el.tagName,
+                    text: el.textContent?.trim(),
+                    classes: el.className,
+                    id: el.id
+                })).slice(0, 10);
                 return {
                     url,
                     title,
@@ -131,11 +115,10 @@ class TurnitinScraperService {
             }
             console.log('\n🎯 Elementos relevantes:');
             pageInfo.relevantElements.forEach((el, index) => {
-                var _a;
-                console.log(`   ${index + 1}. <${el.tag}> "${(_a = el.text) === null || _a === void 0 ? void 0 : _a.substring(0, 50)}..." (${el.classes})`);
+                console.log(`   ${index + 1}. <${el.tag}> "${el.text?.substring(0, 50)}..." (${el.classes})`);
             });
-            const analysisFile = path_1.default.join(this.downloadPath, 'page-analysis.json');
-            fs_1.default.writeFileSync(analysisFile, JSON.stringify(pageInfo, null, 2));
+            const analysisFile = path.join(this.downloadPath, 'page-analysis.json');
+            fs.writeFileSync(analysisFile, JSON.stringify(pageInfo, null, 2));
             console.log(`\n💾 Análisis detallado guardado en: ${analysisFile}`);
         }
         catch (error) {
@@ -153,7 +136,6 @@ class TurnitinScraperService {
                     const rows = Array.from(submissionTable.querySelectorAll('tbody tr'));
                     console.log(`Encontradas ${rows.length} filas en la tabla de trabajos`);
                     rows.forEach((row, index) => {
-                        var _a, _b, _c;
                         try {
                             const cells = Array.from(row.querySelectorAll('td'));
                             if (cells.length === 0)
@@ -163,7 +145,7 @@ class TurnitinScraperService {
                             let reportUrl = '';
                             let submissionId = '';
                             if (cells[1]) {
-                                const authorText = (_a = cells[1].textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                                const authorText = cells[1].textContent?.trim();
                                 if (authorText && authorText.length > 2 && !authorText.includes('unavailable')) {
                                     studentName = authorText;
                                 }
@@ -171,12 +153,12 @@ class TurnitinScraperService {
                             if (cells[2]) {
                                 const titleElement = cells[2].querySelector('a');
                                 if (titleElement && titleElement.href) {
-                                    title = ((_b = titleElement.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || title;
+                                    title = titleElement.textContent?.trim() || title;
                                     reportUrl = titleElement.href;
                                 }
                             }
                             if (cells[3]) {
-                                const submissionIdText = (_c = cells[3].textContent) === null || _c === void 0 ? void 0 : _c.trim();
+                                const submissionIdText = cells[3].textContent?.trim();
                                 if (submissionIdText && submissionIdText.length > 2) {
                                     submissionId = submissionIdText;
                                 }
@@ -237,17 +219,14 @@ class TurnitinScraperService {
                     link.href.includes('ev.turnitin.com') ||
                     link.href.includes('integrity.turnitin.com') ||
                     link.href.includes('view_submission')));
-                return reportLinks.map((link, index) => {
-                    var _a;
-                    return ({
-                        studentName: `Estudiante-FromLink-${index + 1}`,
-                        studentId: `estudiante-link-${index + 1}`,
-                        assignmentTitle: ((_a = link.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || 'Trabajo desde enlace',
-                        reportUrl: link.href,
-                        reportType: 'ai',
-                        source: 'direct-link-search'
-                    });
-                });
+                return reportLinks.map((link, index) => ({
+                    studentName: `Estudiante-FromLink-${index + 1}`,
+                    studentId: `estudiante-link-${index + 1}`,
+                    assignmentTitle: link.textContent?.trim() || 'Trabajo desde enlace',
+                    reportUrl: link.href,
+                    reportType: 'ai',
+                    source: 'direct-link-search'
+                }));
             });
             console.log(`🔗 Encontrados ${allReportLinks.length} enlaces directos a reportes`);
             return allReportLinks;
@@ -276,46 +255,38 @@ class TurnitinScraperService {
             console.log('🔍 Paso 2: Analizando página de vista del trabajo...');
             const aiAnalysis = await page.evaluate(() => {
                 const aiElements = Array.from(document.querySelectorAll('*')).filter(el => {
-                    var _a, _b, _c;
-                    const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
-                    const title = ((_b = el.getAttribute('title')) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
-                    const ariaLabel = ((_c = el.getAttribute('aria-label')) === null || _c === void 0 ? void 0 : _c.toLowerCase()) || '';
+                    const text = el.textContent?.toLowerCase() || '';
+                    const title = el.getAttribute('title')?.toLowerCase() || '';
+                    const ariaLabel = el.getAttribute('aria-label')?.toLowerCase() || '';
                     return (text.includes('ai') ||
                         text.includes('artificial intelligence') ||
                         text.includes('writing report') ||
                         title.includes('ai') ||
                         ariaLabel.includes('ai') ||
                         /\d+%/.test(text));
-                }).map(el => {
-                    var _a;
-                    return ({
-                        text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim().substring(0, 50),
-                        tag: el.tagName,
-                        classes: el.className,
-                        id: el.id,
-                        title: el.getAttribute('title'),
-                        ariaLabel: el.getAttribute('aria-label'),
-                        isClickable: el.tagName === 'BUTTON' || el.tagName === 'A' || el.getAttribute('role') === 'button'
-                    });
-                });
+                }).map(el => ({
+                    text: el.textContent?.trim().substring(0, 50),
+                    tag: el.tagName,
+                    classes: el.className,
+                    id: el.id,
+                    title: el.getAttribute('title'),
+                    ariaLabel: el.getAttribute('aria-label'),
+                    isClickable: el.tagName === 'BUTTON' || el.tagName === 'A' || el.getAttribute('role') === 'button'
+                }));
                 const percentageElements = Array.from(document.querySelectorAll('*')).filter(el => {
-                    var _a;
-                    const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '';
+                    const text = el.textContent?.trim() || '';
                     return /^\d+%$/.test(text) && (el.tagName === 'BUTTON' ||
                         el.tagName === 'A' ||
                         el.getAttribute('role') === 'button' ||
-                        window.getComputedStyle(el).cursor === 'pointer' || // Corregido
+                        window.getComputedStyle(el).cursor === 'pointer' ||
                         el.classList.contains('btn') ||
                         el.classList.contains('button'));
-                }).map(el => {
-                    var _a;
-                    return ({
-                        text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim(),
-                        tag: el.tagName,
-                        classes: el.className,
-                        id: el.id
-                    });
-                });
+                }).map(el => ({
+                    text: el.textContent?.trim(),
+                    tag: el.tagName,
+                    classes: el.className,
+                    id: el.id
+                }));
                 return { aiElements, percentageElements };
             });
             console.log(`🤖 Elementos relacionados con IA encontrados: ${aiAnalysis.aiElements.length}`);
@@ -337,20 +308,15 @@ class TurnitinScraperService {
             try {
                 const percentageButtons = await page.$$eval('*', (elements) => {
                     return elements.filter(el => {
-                        var _a;
-                        const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '';
+                        const text = el.textContent?.trim() || '';
                         return /^\d+%$/.test(text) && (el.tagName === 'BUTTON' ||
                             el.tagName === 'A' ||
                             el.getAttribute('role') === 'button' ||
-                            window.getComputedStyle(el).cursor === 'pointer' // Corregido
-                        );
-                    }).map(el => {
-                        var _a;
-                        return ({
-                            selector: el.tagName + (el.id ? `#${el.id}` : '') + (el.className ? `.${el.className.split(' ').join('.')}` : ''),
-                            text: (_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()
-                        });
-                    });
+                            window.getComputedStyle(el).cursor === 'pointer');
+                    }).map(el => ({
+                        selector: el.tagName + (el.id ? `#${el.id}` : '') + (el.className ? `.${el.className.split(' ').join('.')}` : ''),
+                        text: el.textContent?.trim()
+                    }));
                 });
                 if (percentageButtons.length > 0) {
                     console.log(`✅ Encontrados ${percentageButtons.length} botones con porcentajes`);
@@ -387,16 +353,16 @@ class TurnitinScraperService {
                 console.log('🎯 Paso 4: Verificando si se abrió el reporte de IA...');
                 const newUrl = page.url();
                 console.log(`📍 Nueva URL: ${newUrl}`);
-                const files = fs_1.default.readdirSync(this.downloadPath);
+                const files = fs.readdirSync(this.downloadPath);
                 const pdfFiles = files.filter(f => f.endsWith('.pdf'));
                 if (pdfFiles.length > 0) {
                     const latestFile = pdfFiles[pdfFiles.length - 1];
                     console.log(`✅ Archivo descargado automáticamente: ${latestFile}`);
                     const newFileName = `${report.studentName.replace(/[^a-zA-Z0-9]/g, '_')}_AI_Report.pdf`;
-                    const oldPath = path_1.default.join(this.downloadPath, latestFile);
-                    const newPath = path_1.default.join(this.downloadPath, newFileName);
+                    const oldPath = path.join(this.downloadPath, latestFile);
+                    const newPath = path.join(this.downloadPath, newFileName);
                     try {
-                        fs_1.default.renameSync(oldPath, newPath);
+                        fs.renameSync(oldPath, newPath);
                         return newFileName;
                     }
                     catch (error) {
@@ -410,7 +376,7 @@ class TurnitinScraperService {
                         console.log('✅ Encontrado botón de descarga');
                         await downloadElements[0].click();
                         await page.waitForTimeout(10000);
-                        const newFiles = fs_1.default.readdirSync(this.downloadPath);
+                        const newFiles = fs.readdirSync(this.downloadPath);
                         const newPdfFiles = newFiles.filter(f => f.endsWith('.pdf'));
                         if (newPdfFiles.length > pdfFiles.length) {
                             const latestFile = newPdfFiles[newPdfFiles.length - 1];
@@ -426,7 +392,7 @@ class TurnitinScraperService {
             console.log('📄 Método de respaldo: Guardando página como PDF...');
             const pdfFileName = `${report.studentName.replace(/[^a-zA-Z0-9]/g, '_')}_AI_Report_screenshot.pdf`;
             await page.pdf({
-                path: path_1.default.join(this.downloadPath, pdfFileName),
+                path: path.join(this.downloadPath, pdfFileName),
                 format: 'A4',
                 printBackground: true,
                 margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' }
@@ -441,14 +407,14 @@ class TurnitinScraperService {
     async saveReportToSystem(report, downloadedFileName) {
         console.log(`💾 Guardando reporte en el sistema para: ${report.studentName}`);
         try {
-            const sourcePath = path_1.default.join(this.downloadPath, downloadedFileName);
-            const uploadsPath = path_1.default.join(__dirname, '..', '..', 'uploads', 'reports');
-            if (!fs_1.default.existsSync(uploadsPath)) {
-                fs_1.default.mkdirSync(uploadsPath, { recursive: true });
+            const sourcePath = path.join(this.downloadPath, downloadedFileName);
+            const uploadsPath = path.join(__dirname, '..', '..', 'uploads', 'reports');
+            if (!fs.existsSync(uploadsPath)) {
+                fs.mkdirSync(uploadsPath, { recursive: true });
             }
             const finalFileName = `${Date.now()}-${downloadedFileName}`;
-            const finalPath = path_1.default.join(uploadsPath, finalFileName);
-            fs_1.default.copyFileSync(sourcePath, finalPath);
+            const finalPath = path.join(uploadsPath, finalFileName);
+            fs.copyFileSync(sourcePath, finalPath);
             const reportDetails = {
                 studentId: report.studentId,
                 uploaderInstructorId: 'auto-scraper',
@@ -472,4 +438,3 @@ class TurnitinScraperService {
         }
     }
 }
-exports.TurnitinScraperService = TurnitinScraperService;

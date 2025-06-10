@@ -1,5 +1,4 @@
 node_modules/
-dist/
 .env
 .env.local
 .env.*.local
@@ -14,3 +13,6 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Don't ignore dist for deployment
+dist/
