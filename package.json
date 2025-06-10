@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A web application for students to download Turnitin AI detection reports.",
   "main": "dist/app.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsc",

@@ -14,5 +14,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Include dist folder for deployment
+# Asegúrate que la siguiente línea esté comentada o eliminada
 # dist/

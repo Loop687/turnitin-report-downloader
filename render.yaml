@@ -3,9 +3,13 @@ services:
     name: turnitin-downloader
     env: node
     plan: free
+    region: oregon # O la región que prefieras
     buildCommand: npm install && npm run build
-    startCommand: node dist/app.js
+    startCommand: node dist/app.js # Asegúrate que esta línea sea EXACTAMENTE así
+    healthCheckPath: /health # Añadido para mejor monitoreo
     envVars:
+      - key: NODE_VERSION # Especificar versión LTS de Node
+        value: 20.11.1 # O la última LTS estable, ej: 18.19.0
       - key: NODE_ENV
         value: production
       - key: PUPPETEER_EXECUTABLE_PATH
