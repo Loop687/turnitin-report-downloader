@@ -1,0 +1,9 @@
+node_modules/
+.git/
+temp-downloads/
+uploads/
+tracking-data/
+*.log
+.env.local
+.env.*.local
+src/

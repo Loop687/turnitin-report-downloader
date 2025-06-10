@@ -7,6 +7,7 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "dev": "npx ts-node --watch src/app.ts",
+    "postbuild": "echo 'Build complete - dist folder created'",
     "scrape": "npx ts-node src/scripts/turnitin-scraper.ts",
     "scrape-debug": "npx ts-node src/scripts/turnitin-scraper.ts --debug",
     "learn": "npx ts-node src/scripts/interactive-learning.ts",
